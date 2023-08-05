@@ -1,4 +1,4 @@
-"""Python Bot which schedules events for the server"""
+"""Python Bot Handling commands and events"""
 import os
 import discord
 from discord.ext import commands
@@ -17,9 +17,6 @@ async def on_ready():
     except Exception as e:
         print(f"Exception while syncing slash commands: {e}")
 
-@bot.tree.command(name="hello_there")
-async def hello_there(interaction: discord.Interaction):
-    """Says hello there"""
-    await interaction.response.send_message("General Kenobi!", ephemeral=True)
-
-bot.run(os.getenv('TOKEN'))
+def run_bot():
+    """Runs the bot"""
+    bot.run(os.getenv('TOKEN'))
