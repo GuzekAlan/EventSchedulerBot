@@ -18,7 +18,17 @@ def list_users(db: Database) -> list:
         return list(result)
     return None
 
+def add_event(db: Database, event_name: str, **additional_info: dict) -> bool:
+    """Adds an event to the database"""
+    result = db.events.insert_one({
+        "event_name": event_name,
+        **additional_info
+    })
+    if result.acknowledged:
+        return True
+    return False
+
 if __name__ == '__main__':
-    import db
+    import bot.event_scheduler.db as db
     db = db.get_database()
     list_users(db)

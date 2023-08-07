@@ -5,9 +5,9 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 load_dotenv()
-from bot.db import get_database
-from bot import api
-from bot.utils import *
+from event_scheduler.db import get_database
+from event_scheduler import api
+from event_scheduler.utils import *
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
@@ -26,9 +26,9 @@ async def on_ready() -> None:
 async def add_user(interaction: discord.Interaction, user: str) -> None:
     """Adds a user to the database"""
     if api.add_user(get_database(), user):
-        await interaction.response.send_message(f"Added {user} to the database", ephemeral=True)
+        await interaction.response.send_message(f"Added user: {user}", ephemeral=True)
     else:
-        await interaction.response.send_message(f"Failed to add {user} to the database", ephemeral=True)
+        await interaction.response.send_message(f"Failed to add {user}", ephemeral=True)
 
 @bot.tree.command(name='list_users')
 async def list_users(interaction: discord.Interaction) -> None:
@@ -38,6 +38,15 @@ async def list_users(interaction: discord.Interaction) -> None:
         await interaction.response.send_message(f"Users: {users_list(users)}", ephemeral=True)
     else:
         await interaction.response.send_message(f"No users found", ephemeral=True)
+
+@bot.tree.command(name='add_event')
+@app_commands.describe(event_name='Name of the event')
+async def add_event(interaction: discord.Interaction, event_name: str) -> None:
+    """Adds an event to the database"""
+    if api.add_event(get_database(), event_name):
+        await interaction.response.send_message(f"Event `{event_name}` added", ephemeral=True)
+    else:
+        await interaction.response.send_message(f"Failed to add `{event_name}` event", ephemeral=True)
 
 def run_bot() -> None:
     """Runs the bot"""
