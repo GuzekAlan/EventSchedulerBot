@@ -1,6 +1,7 @@
 """Python Bot Handling commands and events"""
 import os
 import discord
+import logging
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from event_scheduler import api
 from event_scheduler.utils import *
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
+handler = logging.FileHandler(filename='bot.log', encoding='utf-8', mode='w')
 
 @bot.event
 async def on_ready() -> None:
@@ -48,6 +50,7 @@ async def add_event(interaction: discord.Interaction, event_name: str) -> None:
     else:
         await interaction.response.send_message(f"Failed to add `{event_name}` event", ephemeral=True)
 
+
 def run_bot() -> None:
     """Runs the bot"""
-    bot.run(os.getenv('TOKEN'))
+    bot.run(os.getenv('TOKEN'), log_handler=handler, log_level=logging.INFO)
