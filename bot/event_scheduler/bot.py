@@ -10,8 +10,8 @@ from event_scheduler.db import get_database
 from event_scheduler import api
 from event_scheduler.utils import *
 
-bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
-handler = logging.FileHandler(filename='bot.log', encoding='utf-8', mode='w')
+bot = commands.Bot(command_prefix='!', description="Set of commands to pick perfect date for your event", intents=discord.Intents.all())
+handler = logging.FileHandler(filename='bot.log', encoding='utf-8', mode='a')
 
 @bot.event
 async def on_ready() -> None:
