@@ -9,6 +9,7 @@ load_dotenv()
 from event_scheduler.db import get_database
 from event_scheduler import api
 from event_scheduler.utils import *
+from event_scheduler.ui.view import ScheduleEventView, ScheduleEventEmbed
 
 bot = commands.Bot(command_prefix='!', description="Set of commands to pick perfect date for your event", intents=discord.Intents.all())
 handler = logging.FileHandler(filename='bot.log', encoding='utf-8', mode='a')
@@ -41,14 +42,12 @@ async def list_users(interaction: discord.Interaction) -> None:
     else:
         await interaction.response.send_message(f"No users found", ephemeral=True)
 
-@bot.tree.command(name='add_event')
-@app_commands.describe(event_name='Name of the event')
-async def add_event(interaction: discord.Interaction, event_name: str) -> None:
+@bot.tree.command(name='schedule_event')
+async def add_event(interaction: discord.Interaction) -> None:
     """Adds an event to the database"""
-    if api.add_event(get_database(), event_name):
-        await interaction.response.send_message(f"Event `{event_name}` added", ephemeral=True)
-    else:
-        await interaction.response.send_message(f"Failed to add `{event_name}` event", ephemeral=True)
+    embed = ScheduleEventEmbed()
+    view = ScheduleEventView(embed=embed)
+    await interaction.response.send_message('Schedule Event', view=view, embed=embed)
 
 
 def run_bot() -> None:
