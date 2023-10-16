@@ -1,9 +1,8 @@
 """Python Bot Handling commands and events"""
 import os
-import discord
 import logging
+import discord
 import event_scheduler.ui.schedule_event_message as schedule_event
-from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 load_dotenv()
@@ -36,6 +35,5 @@ async def on_ready() -> None:
 @bot.tree.command(name='schedule-event')
 async def add_event(interaction: discord.Interaction) -> None:
     """Adds an event to the database"""
-    embed = schedule_event.ScheduleEventEmbed()
-    view = schedule_event.ScheduleEventView(embed=embed)
-    await interaction.response.send_message('Schedule Event', view=view, embed=embed)
+    view = schedule_event.ScheduleEventView()
+    await interaction.response.send_message('Schedule Event', view=view, embed=view.embed)

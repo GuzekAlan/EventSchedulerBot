@@ -1,13 +1,28 @@
-from typing import Optional
 import discord
+import re
 from discord import ui
 from discord.interactions import Interaction
+from event_scheduler.api.data_models import EventModel
 
 
 class ScheduleEventEmbed(discord.Embed):
-    def __init__(self):
-        super().__init__(title="Schedule Event",
-                         description="Schedule an event", color=discord.Color.pink())
+    def __init__(self, model: EventModel = None):
+        super().__init__(title="Schedule Event", color=discord.Color.pink())
+        self.model = model if model else EventModel()
+
+    def reload_embed(self):
+        self.clear_fields()
+        self.add_field(name="Event Name",
+                       value=self.model.name, inline=False)
+        if self.model.description:
+            self.add_field(name="Description",
+                           value=self.model.description, inline=False)
+        self.add_field(
+            name="Participants", value=self.model.get_trunc_participants(), inline=False)
+        if self.model.tags:
+            self.add_field(
+                name="Tags", value=self.model.get_trunc_tags(), inline=False)
+        return self
 
 
 class ScheduleEventView(ui.View):
@@ -15,7 +30,8 @@ class ScheduleEventView(ui.View):
 
     def __init__(self, embed: discord.Embed = None):
         super().__init__()
-        self.embed = embed
+        self.embed = embed if embed else ScheduleEventEmbed()
+        self.embed = self.embed.reload_embed()
         self.add_participant_button = AddParticipantButton(self.embed)
         self.add_item(self.add_participant_button)
         self.add_description_button = AddDescriptionButton(self.embed)
@@ -27,18 +43,19 @@ class ScheduleEventView(ui.View):
 
 class AddParticipantButton(ui.Button):
     def __init__(self, embed: discord.Embed):
-        super().__init__(label="Add Participant", style=discord.ButtonStyle.secondary)
+        super().__init__(label="Add Participant", style=discord.ButtonStyle.primary)
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
-        self.disabled = True
         self.view.add_item(SelectParticipant(self.embed))
+        self.style = discord.ButtonStyle.secondary
+        self.disabled = True
         await interaction.message.edit(view=self.view)
 
 
 class AddDescriptionButton(ui.Button):
     def __init__(self, embed: discord.Embed):
-        super().__init__(label="Add Description", style=discord.ButtonStyle.secondary)
+        super().__init__(label="Add Info", style=discord.ButtonStyle.primary)
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
@@ -56,24 +73,54 @@ class SelectParticipant(ui.MentionableSelect):
     async def callback(self, interaction: Interaction):
         self.view.remove_item(self)
         self.view.add_participant_button.disabled = False
-        self.embed.add_field(name="Participants", value=", ".join(
-            [participant.mention for participant in self.values]))
-        await interaction.message.edit(view=self.view, embed=self.embed)
+        self.embed.model.add_participant(self.values[0])
+        await interaction.message.edit(view=self.view, embed=self.embed.reload_embed())
 
 
 class AddDescriptionModal(ui.Modal):
-    name = ui.TextInput(label="Event name", default="Dungeons and Dragons")
+    name = ui.TextInput(label="Event name",
+                        default="Dungeons and Dragons", required=True)
+    description = ui.TextInput(
+        label="Description", placeholder="Meeting", style=discord.TextStyle.long, required=False)
+    tags = ui.TextInput(label="Tags", placeholder="DnD,Meeting",
+                        style=discord.TextStyle.short, required=False)
+    start_time = ui.TextInput(
+        label="Start Time", placeholder="19.04.2003 12:00", required=True)
+    end_time = ui.TextInput(
+        label="End Time", placeholder="20.04.2003 13:00", required=True)
 
     def __init__(self, view: ScheduleEventView, embed: discord.Embed):
-        super().__init__(title="Add Description", timeout=120.0)
+        super().__init__(title="Add Info", timeout=120.0)
         self.view = view
         self.embed = embed
+        if self.embed.model.name:
+            self.name.value = self.embed.model.name
+        if self.embed.model.description:
+            self.description.value = self.embed.model.description
+
+    def validate(self) -> str | None:
+        tags_pattern = re.compile("[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*")
+        datetime_pattern = re.compile("\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}")
+        if self.tags and not re.fullmatch(tags_pattern, self.tags.value):
+            return "Tags"
+        if not re.fullmatch(datetime_pattern, self.start_time.value):
+            return "Start Time"
+        if not re.fullmatch(datetime_pattern, self.end_time.value):
+            return "End Time"
+        return None
 
     async def on_submit(self, interaction: Interaction) -> None:
-        self.embed.insert_field_at(
-            0, name="Event Name", value=self.name.value, inline=False)
-        self.view.add_description_button.disabled = True
-        await interaction.response.edit_message(view=self.view, embed=self.embed)
+        if field := self.validate():
+            # This weird thing below is to make the text red
+            await interaction.response.send_message(f"```ansi\n\u001b[31mInvalid input: {field}\n```", ephemeral=True, )
+            return
+
+        self.view.add_description_button.label = "Edit Info"
+        self.view.add_description_button.style = discord.ButtonStyle.secondary
+        self.embed.model.name = self.name.value
+        self.embed.model.description = self.description.value
+
+        await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
     async def on_error(self, interaction: Interaction, error: Exception) -> None:
         await interaction.response.send_message(f"Error: {error}", ephemeral=True)
