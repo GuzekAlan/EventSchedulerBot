@@ -36,6 +36,8 @@ class ScheduleEventView(ui.View):
         self.add_item(self.add_participant_button)
         self.add_description_button = AddDescriptionButton(self.embed)
         self.add_item(self.add_description_button)
+        self.save_button = SaveButton(self.embed)
+        self.add_item(self.save_button)
 
 
 # Buttons
@@ -62,6 +64,18 @@ class AddDescriptionButton(ui.Button):
         await interaction.response.send_modal(AddDescriptionModal(self.view, self.embed))
 
 
+class SaveButton(ui.Button):
+    def __init__(self, embed: discord.Embed):
+        super().__init__(label="Save", style=discord.ButtonStyle.green)
+        self.embed = embed
+
+    async def callback(self, interaction: Interaction):
+        if self.embed.model.save_in_database():
+            await interaction.message.edit(content="Event created!", embed=None, view=None)
+        else:
+            await interaction.response.send_message("Ups, something went wrong!")
+
+
 # UI Objects
 
 
@@ -85,9 +99,9 @@ class AddDescriptionModal(ui.Modal):
     tags = ui.TextInput(label="Tags", placeholder="DnD,Meeting",
                         style=discord.TextStyle.short, required=False)
     start_time = ui.TextInput(
-        label="Start Time", placeholder="19.04.2003 12:00", required=True)
+        label="From", placeholder="DD/MM/YYYY", required=True)
     end_time = ui.TextInput(
-        label="End Time", placeholder="20.04.2003 13:00", required=True)
+        label="To", placeholder="DD/MM/YYYY", required=True)
 
     def __init__(self, view: ScheduleEventView, embed: discord.Embed):
         super().__init__(title="Add Info", timeout=120.0)
@@ -98,9 +112,11 @@ class AddDescriptionModal(ui.Modal):
         if self.embed.model.description:
             self.description.value = self.embed.model.description
 
-    def validate(self) -> str | None:
+    def validate(self) -> str or None:
+        """Returns the name of the field that is invalid or None if all fields are valid"""
+        return None  # TODO: fix this
         tags_pattern = re.compile("[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*")
-        datetime_pattern = re.compile("\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}")
+        datetime_pattern = re.compile("\d{2}\.\d{2}\.\d{2}")
         if self.tags and not re.fullmatch(tags_pattern, self.tags.value):
             return "Tags"
         if not re.fullmatch(datetime_pattern, self.start_time.value):
@@ -119,6 +135,9 @@ class AddDescriptionModal(ui.Modal):
         self.view.add_description_button.style = discord.ButtonStyle.secondary
         self.embed.model.name = self.name.value
         self.embed.model.description = self.description.value
+        self.embed.model.add_tags(self.tags.value)
+        self.embed.model.start_date = self.start_time.value
+        self.embed.model.end_date = self.end_time.value
 
         await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
