@@ -28,8 +28,9 @@ class ScheduleEventEmbed(discord.Embed):
 class ScheduleEventView(ui.View):
     """View for scheduling an event"""
 
-    def __init__(self, embed: discord.Embed = None):
+    def __init__(self, embed: discord.Embed = None, bot: discord.Client = None):
         super().__init__()
+        self.bot = bot
         self.embed = embed if embed else ScheduleEventEmbed()
         self.embed = self.embed.reload_embed()
         self.add_participant_button = AddParticipantButton(self.embed)
@@ -70,7 +71,8 @@ class SaveButton(ui.Button):
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
-        if self.embed.model.save_in_database():
+        if event_id := self.embed.model.save_in_database():
+            self.view.bot.dispatch("start_schedule_event", event_id)
             await interaction.message.edit(content="Event created!", embed=None, view=None)
         else:
             await interaction.response.send_message("Ups, something went wrong!")

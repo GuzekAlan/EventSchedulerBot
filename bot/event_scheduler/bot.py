@@ -33,8 +33,14 @@ async def on_ready() -> None:
         print(f"Exception while syncing slash commands: {e}")
 
 
+@bot.event
+async def on_start_schedule_event(event_id: int) -> None:
+    """Starts the schedule event"""
+    print(f"Event {event_id} scheduling started")  # TODO: Add event scheduling
+
+
 @bot.tree.command(name='schedule-event')
 async def add_event(interaction: discord.Interaction) -> None:
     """Adds an event to the database"""
-    view = ScheduleEventView()
+    view = ScheduleEventView(bot=bot)
     await interaction.response.send_message('Schedule Event', view=view, embed=view.embed)
