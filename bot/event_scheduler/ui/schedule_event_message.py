@@ -2,16 +2,20 @@ import discord
 import re
 from discord import ui
 from discord.interactions import Interaction
+from event_scheduler import utils
 from event_scheduler.api.data_models import EventModel
 
 
 class ScheduleEventEmbed(discord.Embed):
-    def __init__(self, model: EventModel = None):
-        super().__init__(title="Schedule Event", color=discord.Color.pink())
+    def __init__(self, model: EventModel = None, title: str = "Schedule Event"):
+        super().__init__(title=title, color=discord.Color.pink())
         self.model = model if model else EventModel()
 
     def reload_embed(self):
         self.clear_fields()
+        if self.model.picked_datetime:
+            self.add_field(name="Date",
+                           value=utils.datetime_to_str(self.model.picked_datetime), inline=False)
         self.add_field(name="Event Name",
                        value=self.model.name, inline=False)
         if self.model.description:
@@ -39,6 +43,7 @@ class ScheduleEventView(ui.View):
         self.add_item(self.add_description_button)
         self.save_button = SaveButton(self.embed)
         self.add_item(self.save_button)
+        # TODO: Add button for removing participants
 
 
 # Buttons
