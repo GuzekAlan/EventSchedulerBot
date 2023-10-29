@@ -2,8 +2,10 @@
 import os
 import logging
 import discord
+from event_scheduler.api.data_models import EventModel
 from event_scheduler.db import get_database
 from event_scheduler.ui.schedule_event_message import ScheduleEventView
+from event_scheduler.ui.select_dates_message import SelectDatesView
 from discord.ext import commands
 from dotenv import load_dotenv
 load_dotenv()
@@ -34,9 +36,12 @@ async def on_ready() -> None:
 
 
 @bot.event
-async def on_start_schedule_event(event_id: int) -> None:
+async def on_start_schedule_event(event_id: int, member_id, event_model: EventModel) -> None:
     """Starts the schedule event"""
-    print(f"Event {event_id} scheduling started")  # TODO: Add event scheduling
+    user = bot.get_user(member_id)
+    view = SelectDatesView(bot=bot, event_model=event_model)
+    print(f"Sending message to {user.name}")
+    await user.send('Pick Dates for your event!', view=view, embed=view.embed)
 
 
 @bot.tree.command(name='schedule-event')

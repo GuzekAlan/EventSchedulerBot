@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, timedelta
 from typing import Optional
 from discord import Member
 from event_scheduler.db import get_database
@@ -10,8 +10,8 @@ class EventModel:
         self.name: Optional[str] = None
         self.description: Optional[str] = None
         self.tags: list(str) = []
-        self.start_date: date = None
-        self.end_date: date = None
+        self.start_date: datetime = None
+        self.end_date: datetime = None
         self.status: str = "created"
 
     def add_participant(self, participant: str) -> bool:
@@ -23,6 +23,20 @@ class EventModel:
     def add_tags(self, tags: str) -> bool:
         [self.tags.append(tag)
          for tag in tags.split(",") if tag not in self.tags]
+
+    def add_start_date(self, date: str) -> bool:
+        try:
+            self.start_date = datetime.strptime(date, '%d/%m/%Y')
+            return True
+        except:
+            return False
+
+    def add_end_date(self, date: str) -> bool:
+        try:
+            self.end_date = datetime.strptime(date, '%d/%m/%Y')
+            return True
+        except:
+            return False
 
     def get_name(self) -> str:
         if self.name:
@@ -56,3 +70,25 @@ class EventModel:
         if verbose:
             print(data)
         return collection.insert_one(data).inserted_id
+
+
+class AvalibilityModel:
+    def __init__(self, current_date: datetime) -> None:
+        self.current_date = current_date
+        self.availibility = {current_date: {"ok": [], "maybe": [], "no": []}}
+
+    def change_day(self, direction: str, days: int = 1) -> bool:
+        if direction == "next":
+            self.current_date = self.current_date + timedelta(days=days)
+            return True
+        elif direction == "previous":
+            self.current_date = self.current_date - timedelta(days=days)
+            return True
+        else:
+            return False
+
+    def add_times(self, times: list, availibility: str = "maybe") -> bool:
+        if availibility not in ["ok", "maybe", "no"]:
+            return False
+        self.availibility[self.current_date][availibility] = times
+        return True

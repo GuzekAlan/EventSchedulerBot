@@ -53,7 +53,7 @@ class AddParticipantButton(ui.Button):
         self.view.add_item(SelectParticipant(self.embed))
         self.style = discord.ButtonStyle.secondary
         self.disabled = True
-        await interaction.message.edit(view=self.view)
+        await interaction.response.edit_message(view=self.view)
 
 
 class AddDescriptionButton(ui.Button):
@@ -72,8 +72,14 @@ class SaveButton(ui.Button):
 
     async def callback(self, interaction: Interaction):
         if event_id := self.embed.model.save_in_database():
-            self.view.bot.dispatch("start_schedule_event", event_id)
-            await interaction.message.edit(content="Event created!", embed=None, view=None)
+            for p in self.embed.model.participants:
+                self.view.bot.dispatch(
+                    "start_schedule_event",
+                    event_id,
+                    p.id,
+                    self.embed.model
+                )
+            await interaction.response.edit_message(content="Event created!", embed=None, view=None)
         else:
             await interaction.response.send_message("Ups, something went wrong!")
 
@@ -90,7 +96,7 @@ class SelectParticipant(ui.MentionableSelect):
         self.view.remove_item(self)
         self.view.add_participant_button.disabled = False
         self.embed.model.add_participant(self.values[0])
-        await interaction.message.edit(view=self.view, embed=self.embed.reload_embed())
+        await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
 
 class AddDescriptionModal(ui.Modal):
@@ -101,9 +107,9 @@ class AddDescriptionModal(ui.Modal):
     tags = ui.TextInput(label="Tags", placeholder="DnD,Meeting",
                         style=discord.TextStyle.short, required=False)
     start_time = ui.TextInput(
-        label="From", placeholder="DD/MM/YYYY", required=True)
+        label="From", placeholder="DD/MM/YYYY", default="20/10/2023", required=True)
     end_time = ui.TextInput(
-        label="To", placeholder="DD/MM/YYYY", required=True)
+        label="To", placeholder="DD/MM/YYYY", default="24/10/2023", required=True)
 
     def __init__(self, view: ScheduleEventView, embed: discord.Embed):
         super().__init__(title="Add Info", timeout=120.0)
@@ -138,8 +144,8 @@ class AddDescriptionModal(ui.Modal):
         self.embed.model.name = self.name.value
         self.embed.model.description = self.description.value
         self.embed.model.add_tags(self.tags.value)
-        self.embed.model.start_date = self.start_time.value
-        self.embed.model.end_date = self.end_time.value
+        self.embed.model.add_start_date(self.start_time.value)
+        self.embed.model.add_end_date(self.end_time.value)
 
         await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
