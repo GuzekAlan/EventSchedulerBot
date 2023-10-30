@@ -38,9 +38,12 @@ class SelectDatesView(ui.View):
         self.add_item(ChangeDayButton(self.embed, "<", "previous"))
         self.add_item(ChangeDayButton(self.embed, ">", "next"))
         self.add_item(ChangeDayButton(self.embed, ">>", "next", 7))
-        self.add_item(SelectHours(self.embed, "ok"))
-        self.add_item(SelectHours(self.embed, "maybe"))
-        self.add_item(SelectHours(self.embed, "no"))
+        self.select_ok_hours = SelectHours(self.embed, "ok")
+        self.add_item(self.select_ok_hours)
+        self.select_maybe_hours = SelectHours(self.embed, "maybe")
+        self.add_item(self.select_maybe_hours)
+        self.select_no_hours = SelectHours(self.embed, "no")
+        self.add_item(self.select_no_hours)
         self.add_item(SaveButton(self.embed))
 
 

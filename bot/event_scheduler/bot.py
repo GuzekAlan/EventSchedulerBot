@@ -52,11 +52,19 @@ async def on_save_availibility(model: AvailibilityModel) -> None:
     if event := collection.find_one({"_id": model.event_id}):
         if len(event["availibility"]) == len(event["participants"]):
             date = pick_date(event["availibility"])
+            if date == None:
+                return await bot.get_channel(1168013370478305423).send("No date picked :(")
             if collection.update_one({"_id": model.event_id}, {
                     "$set": {"status": "created", "date": date}}).acknowledged:
                 # TODO: Change HARDCODED channel to specified one
                 await bot.get_channel(1168013370478305423).send("Event created!", view=None, embed=ScheduleEventEmbed(
                     FilledEventModel(model.event_id, bot), "Scheduled Event").reload_embed())
+
+# # Waring: Temporal command for testing purposes
+# @bot.command(name='test-select-date')
+# async def test_select_date(interaction: discord.Interaction) -> None:
+#     """Test command for selecting date"""
+#     bot.dispatch()
 
 
 @bot.tree.command(name='schedule-event')
