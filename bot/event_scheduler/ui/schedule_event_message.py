@@ -115,6 +115,7 @@ class AddDescriptionModal(ui.Modal):
         label="From", placeholder="DD/MM/YYYY", default="20/10/2023", required=True)
     end_time = ui.TextInput(
         label="To", placeholder="DD/MM/YYYY", default="24/10/2023", required=True)
+    # TODO: Add duration of the event and update selecting algorithm
 
     def __init__(self, view: ScheduleEventView, embed: discord.Embed):
         super().__init__(title="Add Info", timeout=120.0)
