@@ -8,6 +8,7 @@ from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, Schedu
 from event_scheduler.ui.select_dates_message import SelectDatesView
 from event_scheduler.api.algorithms import pick_date
 from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -72,3 +73,11 @@ async def add_event(interaction: discord.Interaction) -> None:
     """Adds an event to the database"""
     view = ScheduleEventView(bot=bot)
     await interaction.response.send_message('**Schedule Event**', view=view, embed=view.embed)
+
+
+@bot.tree.command(name='show-events')
+@app_commands.describe(status="Which status of events to show (`scheduling`, `created`)")
+async def show_events(interaction: discord.Interaction, status: str) -> None:
+    """Shows events with specified status"""
+    if status not in ["scheduling", "created"]:
+        return await interaction.response.send_message("Invalid status")
