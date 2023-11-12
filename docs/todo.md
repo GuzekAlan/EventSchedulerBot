@@ -6,7 +6,7 @@
 
 ## UI poprawa:
 - [x] Zaznaczone odpowiedzi zostają zaznaczone po ponownym kliknięciu select boxa
-- [ ] Tylko 2 opcje do wyboru: `ok` i `maybe` (`no` obliczane przy zapisywaniu do bazy)
+- [x] Tylko 2 opcje do wyboru: `ok` i `maybe` (`no` obliczane przy zapisywaniu do bazy)
 - [x] Dostosowanie kolorystyki embedów
 - [ ] Dodanie duration time i uwzględnienie tego w algorytmie
 

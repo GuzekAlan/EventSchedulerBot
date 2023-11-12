@@ -44,6 +44,13 @@ class AvailibilityModel:
         return chosen_hour in selected_hours
 
     def save_in_database(self):
+        for date in self.availibility.keys():
+            ok_times = [dt.time() for dt in self.availibility[date]["ok"]]
+            maybe_times = [dt.time()
+                           for dt in self.availibility[date]["maybe"]]
+            self.availibility[date]["no"] = [
+                datetime.combine(utils.str_to_date(date), time) for time in self.times if time not in ok_times and time not in maybe_times
+            ]
         collection = get_database()["events"]
         data = {
             str(self.user_id): self.availibility

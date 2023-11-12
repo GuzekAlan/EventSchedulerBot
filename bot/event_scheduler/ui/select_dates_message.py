@@ -75,9 +75,9 @@ class SaveButton(ui.Button):
         # TODO: Add no hours based on ok and maybe hours
         if self.embed.model.save_in_database():
             self.view.bot.dispatch("save_availibility", self.embed.model)
-            await interaction.response.edit_message(content="`Availibility saved :)`", embed=None, view=None)
+            await interaction.response.edit_message(content=utils.information_message("Availibility saved :)"), embed=None, view=None)
         else:
-            await interaction.response.send_message("Ups, something went wrong!")
+            await interaction.response.send_message(utils.error_message("Ups, something went wrong!"))
 
 
 # UI Objects

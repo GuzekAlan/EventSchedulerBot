@@ -97,7 +97,7 @@ class SaveButton(ui.Button):
                 )
             await interaction.response.edit_message(content="Event created!", embed=None, view=None)
         else:
-            await interaction.response.send_message("Ups, something went wrong!")
+            await interaction.response.send_message(utils.error_message("Ups, something went wrong!"))
 
 
 # UI Objects
@@ -180,4 +180,4 @@ class AddDescriptionModal(ui.Modal):
         await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
     async def on_error(self, interaction: Interaction, error: Exception) -> None:
-        await interaction.response.send_message(f"Error: {error}", ephemeral=True)
+        await interaction.response.send_message(utils.error_message(str(error)), ephemeral=True)

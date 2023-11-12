@@ -80,7 +80,7 @@ async def add_event(interaction: discord.Interaction) -> None:
 async def show_events(interaction: discord.Interaction, status: app_commands.Choice[str]) -> None:
     """Shows events with specified status"""
     if status.value not in ["created", "confirmed", "canceled"]:
-        return await interaction.response.send_message("Invalid status")
+        return await interaction.response.send_message(utils.error_message("Invalid status"))
     if events := EventModel.get_from_database_by_creator(creator_id=interaction.user.id,
                                                          bot=bot, status=status.value):
         return await interaction.response.send_message(embed=ShowEventsEmbed(events, status.value))
