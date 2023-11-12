@@ -35,6 +35,14 @@ class AvailibilityModel:
             self.current_date)][availibility] = [datetime.combine(self.current_date.date(), time) for time in times]
         return True
 
+    def is_time_checked(self, time: time, availibility: str = "maybe") -> bool:
+        if availibility not in ["ok", "maybe", "no"]:
+            return False
+        chosen_hour = time.hour
+        selected_hours = [time.hour for time in self.availibility[utils.date_to_str(
+            self.current_date)][availibility]]
+        return chosen_hour in selected_hours
+
     def save_in_database(self):
         collection = get_database()["events"]
         data = {

@@ -40,6 +40,14 @@ class SelectDatesView(ui.View):
         self.add_item(self.select_maybe_hours)
         self.add_item(SaveButton(self.embed))
 
+    def refresh_selectes(self):
+        self.remove_item(self.select_ok_hours)
+        self.remove_item(self.select_maybe_hours)
+        self.select_ok_hours = SelectHours(self.embed, "ok")
+        self.add_item(self.select_ok_hours)
+        self.select_maybe_hours = SelectHours(self.embed, "maybe")
+        self.add_item(self.select_maybe_hours)
+
 
 # Buttons
 
@@ -52,6 +60,7 @@ class ChangeDayButton(ui.Button):
 
     async def callback(self, interaction: Interaction):
         if self.embed.model.change_day(self.direction, self.days):
+            self.view.refresh_selectes()
             await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
         else:
             await interaction.send_message("Error changing day")
@@ -76,13 +85,22 @@ class SaveButton(ui.Button):
 
 class SelectHours(ui.Select):
     def __init__(self, embed: discord.Embed, availibility: str):
-        super().__init__(placeholder=f"Select {availibility.upper()} Hours", min_values=1, max_values=24, options=list([
-            discord.SelectOption(label=f"{time.hour}:00", value=f"{time.hour}") for time in AvailibilityModel.times
-        ]))
+        super().__init__(
+            placeholder=f"Select {availibility.upper()} Hours",
+            min_values=0,
+            max_values=24,
+            options=list([
+                discord.SelectOption(
+                    label=f"{time.hour}:00",
+                    value=f"{time.hour}",
+                    default=embed.model.is_time_checked(time, availibility)
+                ) for time in AvailibilityModel.times
+            ])
+        )
         self.availibility = availibility
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
         self.embed.model.add_times([time(hour=int(v))
                                    for v in self.values], self.availibility)
-        await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
+        await interaction.response.defer()
