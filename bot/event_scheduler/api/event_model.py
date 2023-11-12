@@ -8,8 +8,9 @@ from event_scheduler.db import get_database
 
 
 class EventModel:
-    def __init__(self, creator_id: int) -> None:
+    def __init__(self, creator_id: int, guild_id: int) -> None:
         self.creator_id: int = creator_id
+        self.guild_id: int = guild_id
         self.participants: list(Member) = []
         self.name: Optional[str] = None
         self.description: Optional[str] = None
@@ -72,6 +73,7 @@ class EventModel:
         collection = get_database()["events"]
         data = {
             "creator_id": self.creator_id,
+            "guild_id": self.guild_id,
             "name": self.name,
             "description": self.description,
             "tags": self.tags,
@@ -99,7 +101,7 @@ class EventModel:
 
 
 def _model_from_database_data(event, bot: commands.Bot):
-    event_model = EventModel(event["creator_id"])
+    event_model = EventModel(event["creator_id"], event["guild_id"])
     event_model.name = event["name"]
     event_model.description = event["description"]
     event_model.tags = event["tags"]

@@ -2,7 +2,7 @@
 - [x] Pokazani wszystkich schedulowanyuch eventów
 - [x] Pokazanie wszystkich ustalonych eventów
 - [ ] Edycja odpowiedzi (reschedule) 
-- [ ] Ustawienie kanału na wiadomości bota
+- [x] Ustawienie kanału na wiadomości bota
 
 ## UI poprawa:
 - [x] Zaznaczone odpowiedzi zostają zaznaczone po ponownym kliknięciu select boxa

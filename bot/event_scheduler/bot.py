@@ -6,6 +6,7 @@ import event_scheduler.utils as utils
 from event_scheduler.api.event_model import EventModel
 from event_scheduler.api.availibility_model import AvailibilityModel
 from event_scheduler.api.algorithms import pick_date
+from event_scheduler.api.settings import upsert_bot_channel_id, get_bot_channel_id
 from event_scheduler.ui.show_events_message import ShowEventsEmbed
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
 from event_scheduler.ui.select_dates_message import SelectDatesView
@@ -58,19 +59,24 @@ async def on_save_availibility(model: AvailibilityModel) -> None:
     if event := collection.find_one({"_id": model.event_id}):
         if len(event["availibility"]) == len(event["participants"]):
             date = pick_date(event["availibility"])
-            if date == None:
-                return await bot.get_channel(1168013370478305423).send("No date picked :(")
-            if collection.update_one({"_id": model.event_id}, {
-                    "$set": {"status": "confirmed", "date": date}}).acknowledged:
-                # TODO: Change HARDCODED channel to specified one
-                await bot.get_channel(1168013370478305423).send("**Event's date confirmed**", view=None, embed=ScheduleEventEmbed(
-                    EventModel.get_from_database(model.event_id, bot), "Scheduled Event").reload_embed())
+            if bot_channel := bot.get_channel(get_bot_channel_id(
+                    event["guild_id"])):
+                if date == None:
+                    return await bot_channel.send("No date picked :(")
+                if collection.update_one({"_id": model.event_id}, {
+                        "$set": {"status": "confirmed", "date": date}}).acknowledged:
+                    return await bot_channel.send("**Event's date confirmed**", view=None, embed=ScheduleEventEmbed(
+                        EventModel.get_from_database(model.event_id, bot), "Scheduled Event").reload_embed())
+            else:
+                await bot.get_user(event["creator_id"]).send(utils.error_message(
+                    f'Bot channel in guild {bot.get_guild(event["guild_id"]).name} not set'))
 
 
 @bot.tree.command(name='schedule-event')
 async def add_event(interaction: discord.Interaction) -> None:
     """Adds an event to the database"""
-    model = EventModel(interaction.user.id)
+    model = EventModel(creator_id=interaction.user.id,
+                       guild_id=interaction.guild.id)
     view = ScheduleEventView(bot=bot, model=model)
     await interaction.response.send_message('**Schedule Event**', view=view, embed=view.embed)
 
@@ -81,7 +87,20 @@ async def show_events(interaction: discord.Interaction, status: app_commands.Cho
     """Shows events with specified status"""
     if status.value not in ["created", "confirmed", "canceled"]:
         return await interaction.response.send_message(utils.error_message("Invalid status"))
-    if events := EventModel.get_from_database_by_creator(creator_id=interaction.user.id,
-                                                         bot=bot, status=status.value):
+    if events := EventModel.get_from_database_by_creator(
+        creator_id=interaction.user.id,
+        bot=bot,
+        status=status.value
+    ):
         return await interaction.response.send_message(embed=ShowEventsEmbed(events, status.value))
     await interaction.response.send_message(utils.information_message("No events found"))
+
+
+@bot.command(name="set-channel")
+async def set_channel(ctx: commands.Context):
+    """Sets channel for bot to send messages"""
+    if ctx.message.author.guild_permissions.administrator:
+        if upsert_bot_channel_id(ctx.guild.id, ctx.channel.id):
+            return await ctx.send(utils.information_message("Channel set"))
+        return await ctx.send(utils.error_message("Error while setting channel"))
+    return await ctx.send(utils.error_message("You don't have permission to do that"))
