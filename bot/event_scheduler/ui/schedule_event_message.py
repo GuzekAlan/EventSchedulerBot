@@ -3,13 +3,13 @@ import re
 from discord import ui
 from discord.interactions import Interaction
 from event_scheduler import utils
-from event_scheduler.api.data_models import EventModel
+from event_scheduler.api.event_models import EventModel
 
 
 class ScheduleEventEmbed(discord.Embed):
-    def __init__(self, model: EventModel = None, title: str = "Schedule Event"):
+    def __init__(self, model: EventModel, title: str = "Schedule Event"):
         super().__init__(title=title, color=discord.Color.pink())
-        self.model = model if model else EventModel()
+        self.model = model
 
     def reload_embed(self):
         self.clear_fields()
@@ -32,19 +32,19 @@ class ScheduleEventEmbed(discord.Embed):
 class ScheduleEventView(ui.View):
     """View for scheduling an event"""
 
-    def __init__(self, embed: discord.Embed = None, bot: discord.Client = None):
+    def __init__(self, model: EventModel, bot: discord.Client = None):
         super().__init__()
         self.bot = bot
-        self.embed = embed if embed else ScheduleEventEmbed()
+        self.embed = ScheduleEventEmbed(model=model)
         self.embed = self.embed.reload_embed()
         self.add_participant_button = AddParticipantButton(self.embed)
         self.add_item(self.add_participant_button)
+        self.remove_participant_button = RemoveParticipantButton(self.embed)
+        self.add_item(self.remove_participant_button)
         self.add_description_button = AddDescriptionButton(self.embed)
         self.add_item(self.add_description_button)
         self.save_button = SaveButton(self.embed)
         self.add_item(self.save_button)
-        # TODO: Add button for removing participants
-
 
 # Buttons
 
@@ -55,8 +55,19 @@ class AddParticipantButton(ui.Button):
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
-        self.view.add_item(SelectParticipant(self.embed))
+        self.view.add_item(AddParticipantSelect(self.embed))
         self.style = discord.ButtonStyle.secondary
+        self.disabled = True
+        await interaction.response.edit_message(view=self.view)
+
+
+class RemoveParticipantButton(ui.Button):
+    def __init__(self, embed: discord.Embed):
+        super().__init__(label="Remove Participant", style=discord.ButtonStyle.secondary)
+        self.embed = embed
+
+    async def callback(self, interaction: Interaction):
+        self.view.add_item(RemoveParticipantSelect(self.embed))
         self.disabled = True
         await interaction.response.edit_message(view=self.view)
 
@@ -92,15 +103,28 @@ class SaveButton(ui.Button):
 # UI Objects
 
 
-class SelectParticipant(ui.MentionableSelect):
+class AddParticipantSelect(ui.UserSelect):
     def __init__(self, embed):
-        super().__init__(placeholder="Select a participant", min_values=1, max_values=1)
+        super().__init__(placeholder="Select a participant to add", min_values=0, max_values=1)
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
         self.view.remove_item(self)
         self.view.add_participant_button.disabled = False
         self.embed.model.add_participant(self.values[0])
+        await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
+
+
+class RemoveParticipantSelect(ui.Select):
+    def __init__(self, embed):
+        super().__init__(placeholder="Select a participant to remove", min_values=1, max_values=1, options=[
+            discord.SelectOption(label=p.name, value=p.id) for p in embed.model.participants])
+        self.embed = embed
+
+    async def callback(self, interaction: Interaction):
+        self.view.remove_item(self)
+        self.view.remove_participant_button.disabled = False
+        self.embed.model.remove_participant(self.values[0])
         await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
 
@@ -149,9 +173,9 @@ class AddDescriptionModal(ui.Modal):
         self.view.add_description_button.style = discord.ButtonStyle.secondary
         self.embed.model.name = self.name.value
         self.embed.model.description = self.description.value
-        self.embed.model.add_tags(self.tags.value)
-        self.embed.model.add_start_date(self.start_time.value)
-        self.embed.model.add_end_date(self.end_time.value)
+        self.embed.model.set_tags(self.tags.value)
+        self.embed.model.set_start_date(self.start_time.value)
+        self.embed.model.set_end_date(self.end_time.value)
 
         await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 

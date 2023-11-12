@@ -3,7 +3,6 @@ from collections import Counter
 
 
 def pick_date(avalibilities: list()) -> datetime or None:
-    print(avalibilities)
     no_datetimes = []
     ok_datetimes = []
     maybe_datetimes = []

@@ -2,7 +2,8 @@
 import os
 import logging
 import discord
-from event_scheduler.api.data_models import *
+from event_scheduler.api.event_models import EventModel
+from event_scheduler.api.availibility_models import AvailibilityModel
 from event_scheduler.db import get_database
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
 from event_scheduler.ui.select_dates_message import SelectDatesView
@@ -41,8 +42,10 @@ async def on_ready() -> None:
 async def on_start_schedule_event(event_id: int, member_id, event_model: EventModel) -> None:
     """Starts the schedule event"""
     if user := bot.get_user(member_id):
-        view = SelectDatesView(bot=bot, event_id=event_id,
-                               user_id=member_id, event_model=event_model)
+        model = AvailibilityModel(event_id, member_id, event_model.start_date,
+                                  event_model.end_date)
+        view = SelectDatesView(
+            bot=bot, event_name=event_model.get_name(), availibility_model=model)
         await user.send('**Select your availibilty for event**', view=view, embed=view.embed)
 
 
@@ -56,22 +59,17 @@ async def on_save_availibility(model: AvailibilityModel) -> None:
             if date == None:
                 return await bot.get_channel(1168013370478305423).send("No date picked :(")
             if collection.update_one({"_id": model.event_id}, {
-                    "$set": {"status": "created", "date": date}}).acknowledged:
+                    "$set": {"status": "confirmed", "date": date}}).acknowledged:
                 # TODO: Change HARDCODED channel to specified one
                 await bot.get_channel(1168013370478305423).send("Event created!", view=None, embed=ScheduleEventEmbed(
-                    FilledEventModel(model.event_id, bot), "Scheduled Event").reload_embed())
-
-# # Waring: Temporal command for testing purposes
-# @bot.command(name='test-select-date')
-# async def test_select_date(interaction: discord.Interaction) -> None:
-#     """Test command for selecting date"""
-#     bot.dispatch()
+                    EventModel.load_from_database(model.event_id, bot), "Scheduled Event").reload_embed())
 
 
 @bot.tree.command(name='schedule-event')
 async def add_event(interaction: discord.Interaction) -> None:
     """Adds an event to the database"""
-    view = ScheduleEventView(bot=bot)
+    model = EventModel(interaction.user.id)
+    view = ScheduleEventView(bot=bot, model=model)
     await interaction.response.send_message('**Schedule Event**', view=view, embed=view.embed)
 
 
