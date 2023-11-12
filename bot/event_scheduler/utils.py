@@ -27,3 +27,11 @@ def date_to_str(date: datetime) -> str:
 
 def str_to_date(date: str) -> datetime:
     return datetime.strptime(date, '%d/%m/%Y')
+
+
+def information_message(text):
+    return f"```ansi\n\u001b[36m{text}\n```"
+
+
+def error_message(text):
+    return f"```ansi\n\u001b[31m{text}\n```"

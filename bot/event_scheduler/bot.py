@@ -2,12 +2,14 @@
 import os
 import logging
 import discord
-from event_scheduler.api.event_models import EventModel
-from event_scheduler.api.availibility_models import AvailibilityModel
-from event_scheduler.db import get_database
+import event_scheduler.utils as utils
+from event_scheduler.api.event_model import EventModel
+from event_scheduler.api.availibility_model import AvailibilityModel
+from event_scheduler.api.algorithms import pick_date
+from event_scheduler.ui.show_events_message import ShowEventsEmbed
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
 from event_scheduler.ui.select_dates_message import SelectDatesView
-from event_scheduler.api.algorithms import pick_date
+from event_scheduler.db import get_database
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
@@ -61,8 +63,8 @@ async def on_save_availibility(model: AvailibilityModel) -> None:
             if collection.update_one({"_id": model.event_id}, {
                     "$set": {"status": "confirmed", "date": date}}).acknowledged:
                 # TODO: Change HARDCODED channel to specified one
-                await bot.get_channel(1168013370478305423).send("Event created!", view=None, embed=ScheduleEventEmbed(
-                    EventModel.load_from_database(model.event_id, bot), "Scheduled Event").reload_embed())
+                await bot.get_channel(1168013370478305423).send("**Event's date confirmed**", view=None, embed=ScheduleEventEmbed(
+                    EventModel.get_from_database(model.event_id, bot), "Scheduled Event").reload_embed())
 
 
 @bot.tree.command(name='schedule-event')
@@ -74,8 +76,12 @@ async def add_event(interaction: discord.Interaction) -> None:
 
 
 @bot.tree.command(name='show-events')
-@app_commands.describe(status="Which status of events to show (`scheduling`, `created`)")
-async def show_events(interaction: discord.Interaction, status: str) -> None:
+@app_commands.choices(status=[app_commands.Choice(name=s.capitalize(), value=s) for s in ["created", "confirmed", "canceled"]])
+async def show_events(interaction: discord.Interaction, status: app_commands.Choice[str]) -> None:
     """Shows events with specified status"""
-    if status not in ["scheduling", "created"]:
+    if status.value not in ["created", "confirmed", "canceled"]:
         return await interaction.response.send_message("Invalid status")
+    if events := EventModel.get_from_database_by_creator(creator_id=interaction.user.id,
+                                                         bot=bot, status=status.value):
+        return await interaction.response.send_message(embed=ShowEventsEmbed(events, status.value))
+    await interaction.response.send_message(utils.information_message("No events found"))

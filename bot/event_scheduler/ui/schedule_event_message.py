@@ -3,7 +3,7 @@ import re
 from discord import ui
 from discord.interactions import Interaction
 from event_scheduler import utils
-from event_scheduler.api.event_models import EventModel
+from event_scheduler.api.event_model import EventModel
 
 
 class ScheduleEventEmbed(discord.Embed):
@@ -166,7 +166,7 @@ class AddDescriptionModal(ui.Modal):
     async def on_submit(self, interaction: Interaction) -> None:
         if field := self.validate():
             # This weird thing below is to make the text red
-            await interaction.response.send_message(f"```ansi\n\u001b[31mInvalid input: {field}\n```", ephemeral=True, )
+            await interaction.response.send_message(utils.error_message(f"Invalid input: {field}"), ephemeral=True, )
             return
 
         self.view.add_description_button.label = "Edit Info"

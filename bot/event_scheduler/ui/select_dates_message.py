@@ -2,8 +2,8 @@ import discord
 import event_scheduler.utils as utils
 from discord import ui
 from discord.interactions import Interaction
-from event_scheduler.api.availibility_models import AvailibilityModel
-from event_scheduler.api.event_models import EventModel
+from event_scheduler.api.availibility_model import AvailibilityModel
+from event_scheduler.api.event_model import EventModel
 from datetime import time
 
 

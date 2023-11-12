@@ -8,8 +8,8 @@ from event_scheduler.db import get_database
 
 
 class EventModel:
-    def __init__(self, owner_id: int) -> None:
-        self.creator_id: int = owner_id
+    def __init__(self, creator_id: int) -> None:
+        self.creator_id: int = creator_id
         self.participants: list(Member) = []
         self.name: Optional[str] = None
         self.description: Optional[str] = None
@@ -85,23 +85,21 @@ class EventModel:
             print(data)
         return collection.insert_one(data).inserted_id
 
+    def get_from_database(event_id: int, bot: commands.Bot):
+        collection = get_database()["events"]
+        if event := collection.find_one({"_id": event_id}):
+            return _model_from_database_data(event, bot)
+        return None
 
-def get_from_database(event_id: int, bot: commands.Bot):
-    collection = get_database()["events"]
-    if event := collection.find_one({"_id": event_id}):
-        return model_from_database_data(event, bot)
-    return None
-
-
-def get_from_database_by_creator(creator_id: int, bot: commands.Bot, limit: int = 5, status: str = "created"):
-    collection = get_database()["events"]
-    if events := collection.find({"creator_id": creator_id, "status": status}).sort("date", DESCENDING).limit(limit):
-        return [model_from_database_data(event, bot) for event in events]
-    return None
+    def get_from_database_by_creator(creator_id: int, bot: commands.Bot, limit: int = 5, status: str = "created"):
+        collection = get_database()["events"]
+        if events := collection.find({"creator_id": creator_id, "status": status}).sort("date", DESCENDING).limit(limit):
+            return [_model_from_database_data(event, bot) for event in events]
+        return None
 
 
-def model_from_database_data(event, bot: commands.Bot):
-    event_model = EventModel(event["owner_id"])
+def _model_from_database_data(event, bot: commands.Bot):
+    event_model = EventModel(event["creator_id"])
     event_model.name = event["name"]
     event_model.description = event["description"]
     event_model.tags = event["tags"]
