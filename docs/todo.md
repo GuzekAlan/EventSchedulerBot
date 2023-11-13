@@ -11,8 +11,8 @@
 - [ ] Dodanie duration time i uwzględnienie tego w algorytmie
 
 ## Napisać testy do algorytmu
-- [ ] Rozdzielić algorytm na funkcje
-- [ ] Napisać unit testy
+- [x] Rozdzielić algorytm na funkcje
+- [x] Napisać unit testy
 - [ ] Zrobić benchmark ile liczy się dla dużych numerów
 
 ## Zacząć pisać latex 
