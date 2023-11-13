@@ -2,12 +2,16 @@
 import os
 import logging
 import discord
-from event_scheduler.api.data_models import *
-from event_scheduler.db import get_database
+import event_scheduler.utils as utils
+from event_scheduler.api.event_model import EventModel
+from event_scheduler.api.availibility_model import AvailibilityModel
+from event_scheduler.api.settings import upsert_bot_channel_id, get_bot_channel_id
+from event_scheduler.ui.show_events_message import ShowEventsEmbed
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
 from event_scheduler.ui.select_dates_message import SelectDatesView
-from event_scheduler.api.algorithms import pick_date
+from event_scheduler.db import get_database
 from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -40,35 +44,57 @@ async def on_ready() -> None:
 async def on_start_schedule_event(event_id: int, member_id, event_model: EventModel) -> None:
     """Starts the schedule event"""
     if user := bot.get_user(member_id):
-        view = SelectDatesView(bot=bot, event_id=event_id,
-                               user_id=member_id, event_model=event_model)
+        model = AvailibilityModel(event_id, member_id, event_model.start_date,
+                                  event_model.end_date)
+        view = SelectDatesView(
+            bot=bot, event_name=event_model.get_name(), availibility_model=model)
         await user.send('**Select your availibilty for event**', view=view, embed=view.embed)
 
 
 @bot.event
 async def on_save_availibility(model: AvailibilityModel) -> None:
     """Checks if every user submited and optionaly picks date with most votes"""
-    collection = get_database()["events"]
-    if event := collection.find_one({"_id": model.event_id}):
-        if len(event["availibility"]) == len(event["participants"]):
-            date = pick_date(event["availibility"])
-            if date == None:
-                return await bot.get_channel(1168013370478305423).send("No date picked :(")
-            if collection.update_one({"_id": model.event_id}, {
-                    "$set": {"status": "created", "date": date}}).acknowledged:
-                # TODO: Change HARDCODED channel to specified one
-                await bot.get_channel(1168013370478305423).send("Event created!", view=None, embed=ScheduleEventEmbed(
-                    FilledEventModel(model.event_id, bot), "Scheduled Event").reload_embed())
-
-# # Waring: Temporal command for testing purposes
-# @bot.command(name='test-select-date')
-# async def test_select_date(interaction: discord.Interaction) -> None:
-#     """Test command for selecting date"""
-#     bot.dispatch()
+    if event_model := EventModel.get_from_database(model.event_id, bot):
+        if event_model.not_answered() == 0 and event_model.status == "created":
+            if bot_channel := bot.get_channel(get_bot_channel_id(
+                    event_model.guild_id)):
+                if error := event_model.choose_date():
+                    await bot_channel.send(utils.error_message(error))
+                else:
+                    await bot_channel.send("**Event's date confirmed**", view=None, embed=ScheduleEventEmbed(
+                        event_model, "Scheduled Event").reload_embed())
+            else:
+                await bot.get_user(event_model.creator_id).send(utils.error_message(
+                    f'Bot channel in guild {bot.get_guild(event_model.guild_id).name} not set'))
 
 
 @bot.tree.command(name='schedule-event')
 async def add_event(interaction: discord.Interaction) -> None:
     """Adds an event to the database"""
-    view = ScheduleEventView(bot=bot)
+    model = EventModel(creator_id=interaction.user.id,
+                       guild_id=interaction.guild.id)
+    view = ScheduleEventView(bot=bot, model=model)
     await interaction.response.send_message('**Schedule Event**', view=view, embed=view.embed)
+
+
+@bot.tree.command(name='show-events')
+@app_commands.choices(status=[app_commands.Choice(name=s.capitalize(), value=s) for s in ["created", "confirmed", "canceled"]])
+async def show_events(interaction: discord.Interaction, status: app_commands.Choice[str]) -> None:
+    """Shows events with specified status"""
+    if events := EventModel.get_from_database_by_creator(
+        creator_id=interaction.user.id,
+        bot=bot,
+        status=status.value
+    ):
+        return await interaction.response.send_message(embed=ShowEventsEmbed(events, status.value))
+    await interaction.response.send_message(utils.information_message("No events found"))
+
+
+@bot.command(name="set-channel")
+async def set_channel(ctx: commands.Context):
+    """Sets channel for bot to send messages"""
+    if ctx.message.author.guild_permissions.administrator:
+        if upsert_bot_channel_id(ctx.guild.id, ctx.channel.id):
+            return await ctx.send(utils.information_message("Channel set"))
+        return await ctx.send(utils.error_message("Error while setting channel"))
+    return await ctx.send(utils.error_message("You don't have permission to do that"))

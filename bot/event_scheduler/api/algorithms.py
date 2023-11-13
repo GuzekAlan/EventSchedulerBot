@@ -3,7 +3,6 @@ from collections import Counter
 
 
 def pick_date(avalibilities: list()) -> datetime or None:
-    print(avalibilities)
     no_datetimes = []
     ok_datetimes = []
     maybe_datetimes = []
@@ -13,6 +12,9 @@ def pick_date(avalibilities: list()) -> datetime or None:
             no_datetimes.extend(availibility_dict["no"])
             ok_datetimes.extend(availibility_dict["ok"])
             maybe_datetimes.extend(availibility_dict["maybe"])
+    no_datetimes = list(set(no_datetimes))
+    ok_datetimes = list(set(ok_datetimes))
+    maybe_datetimes = list(set(maybe_datetimes))
     if git_times := [i for i in ok_datetimes if i not in no_datetimes]:
         if len(git_times) > 0:
             try:
