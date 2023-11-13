@@ -4,6 +4,7 @@ from discord import ui
 from discord.interactions import Interaction
 from event_scheduler import utils
 from event_scheduler.api.event_model import EventModel
+from datetime import datetime, timedelta
 
 
 class ScheduleEventEmbed(discord.Embed):
@@ -21,11 +22,11 @@ class ScheduleEventEmbed(discord.Embed):
         if self.model.description:
             self.add_field(name="Description",
                            value=self.model.description, inline=False)
+        if self.model.duration:
+            self.add_field(name="Duration",
+                           value=f"{self.model.duration} minutes", inline=False)
         self.add_field(
             name="Participants", value=self.model.get_trunc_participants(), inline=False)
-        if self.model.tags:
-            self.add_field(
-                name="Tags", value=self.model.get_trunc_tags(), inline=False)
         return self
 
 
@@ -129,34 +130,38 @@ class RemoveParticipantSelect(ui.Select):
 
 
 class AddDescriptionModal(ui.Modal):
-    name = ui.TextInput(label="Event name",
-                        default="Dungeons and Dragons", required=True)
-    description = ui.TextInput(
-        label="Description", placeholder="Meeting", style=discord.TextStyle.long, required=False)
-    tags = ui.TextInput(label="Tags", placeholder="DnD,Meeting",
-                        style=discord.TextStyle.short, required=False)
-    start_time = ui.TextInput(
-        label="From", placeholder="DD/MM/YYYY", default="20/10/2023", required=True)
-    end_time = ui.TextInput(
-        label="To", placeholder="DD/MM/YYYY", default="24/10/2023", required=True)
-    # TODO: Add duration of the event and update selecting algorithm
-
     def __init__(self, view: ScheduleEventView, embed: discord.Embed):
         super().__init__(title="Add Info", timeout=120.0)
+        default_name = embed.model.name if embed.model.name else "Dungeons and Dragons"
+        default_duration = embed.model.duration if embed.model.duration else "120"
+        default_descripiton = embed.model.description
+        default_start_date = utils.date_to_str(
+            embed.model.start_date if embed.model.start_date else datetime.now())
+        default_end_date = utils.date_to_str(
+            embed.model.end_date if embed.model.end_date else datetime.now() + timedelta(days=7))
         self.view = view
         self.embed = embed
-        if self.embed.model.name:
-            self.name.value = self.embed.model.name
-        if self.embed.model.description:
-            self.description.value = self.embed.model.description
+        self.name = ui.TextInput(label="Name",
+                                 default=default_name, required=True)
+        self.add_item(self.name)
+        self.description = ui.TextInput(label="Description",
+                                        default=default_descripiton, required=False)
+        self.add_item(self.description)
+        self.duration = ui.TextInput(label="Duration(min)",
+                                     default=default_duration, required=True)
+        self.add_item(self.duration)
+        self.start_time = ui.TextInput(
+            label="FROM", placeholder="DD/MM/YYYY", default=default_start_date, required=True)
+        self.add_item(self.start_time)
+        self.end_time = ui.TextInput(
+            label="TO", placeholder="DD/MM/YYYY", default=default_end_date, required=True)
+        self.add_item(self.end_time)
 
     def validate(self) -> str or None:
         """Returns the name of the field that is invalid or None if all fields are valid"""
-        return None  # TODO: fix this
-        tags_pattern = re.compile("[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*")
-        datetime_pattern = re.compile("\d{2}\.\d{2}\.\d{2}")
-        if self.tags and not re.fullmatch(tags_pattern, self.tags.value):
-            return "Tags"
+        if not self.duration.value.isdigit():
+            return "Duration"
+        datetime_pattern = re.compile("\d{2}\/\d{2}\/\d{4}")
         if not re.fullmatch(datetime_pattern, self.start_time.value):
             return "Start Time"
         if not re.fullmatch(datetime_pattern, self.end_time.value):
@@ -173,7 +178,7 @@ class AddDescriptionModal(ui.Modal):
         self.view.add_description_button.style = discord.ButtonStyle.secondary
         self.embed.model.name = self.name.value
         self.embed.model.description = self.description.value
-        self.embed.model.set_tags(self.tags.value)
+        self.embed.model.duration = self.duration.value
         self.embed.model.set_start_date(self.start_time.value)
         self.embed.model.set_end_date(self.end_time.value)
 

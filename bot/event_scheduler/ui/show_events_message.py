@@ -26,10 +26,11 @@ class ShowEventsEmbed(discord.Embed):
             self.add_field(
                 name=event.get_name(),
                 value=f"""
-                Participants: {event.get_trunc_participants()}
-                Tags: {event.get_trunc_tags()}
+                {len(event.availibility)}/{len(event.participants)} answered
+                Duration: {event.duration} minutes
                 Start Date: {utils.date_to_str(event.start_date)}
-                End Date: {utils.date_to_str(event.end_date)}""",
+                End Date: {utils.date_to_str(event.end_date)}
+                """,
                 inline=False
             )
 
@@ -39,7 +40,7 @@ class ShowEventsEmbed(discord.Embed):
                 name=event.get_name(),
                 value=f"""
                 Participants: {event.get_trunc_participants()}
-                Tags: {event.get_trunc_tags()}
+                Duration: {event.duration} minutes
                 Date: {utils.datetime_to_str(event.picked_datetime)}
                 """,
                 inline=False

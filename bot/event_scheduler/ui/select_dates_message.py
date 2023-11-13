@@ -72,13 +72,11 @@ class SaveButton(ui.Button):
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
-        # TODO: Add no hours based on ok and maybe hours
         if self.embed.model.save_in_database():
             self.view.bot.dispatch("save_availibility", self.embed.model)
             await interaction.response.edit_message(content=utils.information_message("Availibility saved :)"), embed=None, view=None)
         else:
             await interaction.response.send_message(utils.error_message("Ups, something went wrong!"))
-
 
 # UI Objects
 

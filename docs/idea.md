@@ -27,7 +27,6 @@ There are buttons which allow to add/edit informations:
 3. `Add Informations`/`Edit Informations` - allows to add informations (or edit if some informations are already added) about event by discord modal: 
     * title
     * description
-    * tags
     * dateframe (from when to when)
 4. `Schedule` - sends message to the channel with information about event and buttons to add participants. It is disabled before every required information is filled.
 

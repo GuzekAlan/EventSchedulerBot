@@ -15,6 +15,7 @@ class AvailibilityModel:
         self.availibility = {
             utils.date_to_str(start_date + timedelta(days=i)): {"ok": [], "maybe": [], "no": []} for i in range((end_date - start_date).days)
         }
+        self.not_available_datetimes = self.get_user_not_available_datetimes()
 
     def change_day(self, direction: str, days: int = 1) -> bool:
         new_date = self.current_date
@@ -43,6 +44,10 @@ class AvailibilityModel:
             self.current_date)][availibility]]
         return chosen_hour in selected_hours
 
+    def is_time_available(self, time: time) -> bool:
+        # TODO: Make it work in Select Hours in View
+        return datetime.combine(self.current_date.date(), time) not in self.not_available_datetimes
+
     def save_in_database(self):
         for date in self.availibility.keys():
             ok_times = [dt.time() for dt in self.availibility[date]["ok"]]
@@ -57,3 +62,8 @@ class AvailibilityModel:
         }
         return collection.update_one({"_id": self.event_id}, {
             "$push": {"availibility": data}}).acknowledged
+
+    def get_user_not_available_datetimes(self):
+        if user := get_database()["users"].find_one({"user_id": self.user_id}):
+            return [e["date"] for e in user["events"]]
+        return None
