@@ -3,7 +3,7 @@ Discord bot with slash commands to schedule events
 
 ## Requirements:
 * Discord bot `TOKEN` key found in: https://discord.com/developers/applications
-* Python installed
+* Python > 3.10 installed
 * Docker installed
 
 ## Installation:
