@@ -1,19 +1,29 @@
-from datetime import datetime
+import math
+
+from datetime import datetime, timedelta
 from collections import Counter
 
 
-def pick_date(avalibilities: list) -> datetime or None:
+def pick_date(avalibilities: list, duration: int) -> datetime or None:
+    full_additional_duration_hours = math.ceil(max(0, duration-60) / 60)
     ok_datetimes, maybe_datetimes, no_datetimes = parse_availibilities(
         avalibilities)
-    ok_datetimes = remove_repetitions(ok_datetimes)
-    maybe_datetimes = remove_repetitions(maybe_datetimes)
-    no_datetimes = remove_repetitions(no_datetimes)
+    no_datetimes = add_duration_to_no_times(
+        no_datetimes, full_additional_duration_hours)
     if ok_datetime := select_datetime(ok_datetimes, no_datetimes):
         return ok_datetime
     if maybe_datetime := select_datetime(maybe_datetimes, no_datetimes):
         return maybe_datetime
     else:
         return None
+
+
+def add_duration_to_no_times(no_datetimes: list, duration: int) -> list:
+    new_no_datetimes = no_datetimes.copy()
+    for i in range(duration):
+        for dt in no_datetimes:
+            new_no_datetimes.append(dt - timedelta(hours=i))
+    return new_no_datetimes
 
 
 def select_datetime(datetimes: list, no_datetimes: list) -> datetime:

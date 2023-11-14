@@ -9,6 +9,7 @@ from event_scheduler.api.settings import upsert_bot_channel_id, get_bot_channel_
 from event_scheduler.ui.show_events_message import ShowEventsEmbed
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
 from event_scheduler.ui.select_dates_message import SelectDatesView
+from event_scheduler.ui.reschedule_event_message import RescheduleEventView
 from event_scheduler.db import get_database
 from discord.ext import commands
 from discord import app_commands
@@ -90,6 +91,13 @@ async def show_events(interaction: discord.Interaction, status: app_commands.Cho
     await interaction.response.send_message(utils.information_message("No events found"))
 
 
+@bot.tree.command(name='reschedule-event')
+@app_commands.choices(status=[app_commands.Choice(name=s.capitalize(), value=s) for s in ["created", "confirmed", "canceled"]])
+async def reschedule_event(interaction: discord.Interaction, status: app_commands.Choice[str]):
+    view = RescheduleEventView(interaction.user.id, status.value, bot=bot)
+    await interaction.response.send_message('**Reschedule Event**', view=view)
+
+
 @bot.command(name="set-channel")
 async def set_channel(ctx: commands.Context):
     """Sets channel for bot to send messages"""
@@ -97,4 +105,4 @@ async def set_channel(ctx: commands.Context):
         if upsert_bot_channel_id(ctx.guild.id, ctx.channel.id):
             return await ctx.send(utils.information_message("Channel set"))
         return await ctx.send(utils.error_message("Error while setting channel"))
-    return await ctx.send(utils.error_message("You don't have permission to do that"))
+    return await ctx.message.reply(utils.error_message("You don't have permission to do that"))
