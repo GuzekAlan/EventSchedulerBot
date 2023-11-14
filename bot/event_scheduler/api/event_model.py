@@ -83,7 +83,8 @@ class EventModel:
         }
         if verbose:
             print(data)
-        return collection.insert_one(data).inserted_id
+        return collection.update_one({"_id": self.event_id}, {
+            "$set": data}, upsert=True).acknowledged
 
     def not_answered(self) -> int:
         return len(self.participants) - len(self.availibility)
@@ -119,7 +120,7 @@ class EventModel:
             return model_from_database_data(event, bot)
         return None
 
-    def get_from_database_by_creator(creator_id: int, bot: commands.Bot, limit: int = 5, status: str = "created"):
+    def get_from_database_by_creator(creator_id: int, bot: commands.Bot, limit: int = 0, status: str = "created"):
         collection = get_database()["events"]
         if events := collection.find({"creator_id": creator_id, "status": status}).sort("date", DESCENDING).limit(limit):
             return [model_from_database_data(event, bot) for event in events]

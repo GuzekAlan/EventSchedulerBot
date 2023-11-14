@@ -9,6 +9,7 @@ from event_scheduler.api.settings import upsert_bot_channel_id, get_bot_channel_
 from event_scheduler.ui.show_events_message import ShowEventsEmbed
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
 from event_scheduler.ui.select_dates_message import SelectDatesView
+from event_scheduler.ui.reschedule_event_message import RescheduleEventView
 from event_scheduler.db import get_database
 from discord.ext import commands
 from discord import app_commands
@@ -88,6 +89,13 @@ async def show_events(interaction: discord.Interaction, status: app_commands.Cho
     ):
         return await interaction.response.send_message(embed=ShowEventsEmbed(events, status.value))
     await interaction.response.send_message(utils.information_message("No events found"))
+
+
+@bot.tree.command(name='reschedule-event')
+@app_commands.choices(status=[app_commands.Choice(name=s.capitalize(), value=s) for s in ["created", "confirmed", "canceled"]])
+async def reschedule_event(interaction: discord.Interaction, status: app_commands.Choice[str]):
+    view = RescheduleEventView(interaction.user.id, status.value, bot=bot)
+    await interaction.response.send_message('**Reschedule Event**', view=view)
 
 
 @bot.command(name="set-channel")

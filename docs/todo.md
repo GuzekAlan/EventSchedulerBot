@@ -1,7 +1,7 @@
 ## Dodatkowe funkcje
 - [x] Pokazani wszystkich schedulowanyuch eventów
 - [x] Pokazanie wszystkich ustalonych eventów
-- [ ] Edycja odpowiedzi (reschedule) 
+- [x] Edycja odpowiedzi (reschedule) 
 - [x] Ustawienie kanału na wiadomości bota
 
 ## UI poprawa:
