@@ -8,7 +8,7 @@
 - [x] Zaznaczone odpowiedzi zostają zaznaczone po ponownym kliknięciu select boxa
 - [x] Tylko 2 opcje do wyboru: `ok` i `maybe` (`no` obliczane przy zapisywaniu do bazy)
 - [x] Dostosowanie kolorystyki embedów
-- [ ] Dodanie duration time i uwzględnienie tego w algorytmie
+- [x] Dodanie duration time i uwzględnienie tego w algorytmie
 
 ## Napisać testy do algorytmu
 - [x] Rozdzielić algorytm na funkcje
