@@ -105,4 +105,4 @@ async def set_channel(ctx: commands.Context):
         if upsert_bot_channel_id(ctx.guild.id, ctx.channel.id):
             return await ctx.send(utils.information_message("Channel set"))
         return await ctx.send(utils.error_message("Error while setting channel"))
-    return await ctx.send(utils.error_message("You don't have permission to do that"))
+    return await ctx.message.reply(utils.error_message("You don't have permission to do that"))
