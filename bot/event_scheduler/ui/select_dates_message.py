@@ -72,11 +72,12 @@ class SaveButton(ui.Button):
         self.embed = embed
 
     async def callback(self, interaction: Interaction):
+        await interaction.response.defer()
         if self.embed.model.save_in_database():
             self.view.bot.dispatch("save_availibility", self.embed.model)
-            await interaction.response.edit_message(content=utils.information_message("Availibility saved :)"), embed=None, view=None)
+            await interaction.followup.edit_message(interaction.message.id, content=utils.information_message("Availibility saved :)"), embed=None, view=None)
         else:
-            await interaction.response.send_message(utils.error_message("Ups, something went wrong!"))
+            await interaction.followup.send_message(interaction.message.id, utils.error_message("Ups, something went wrong!"))
 
 # UI Objects
 

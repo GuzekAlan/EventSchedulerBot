@@ -84,10 +84,17 @@ class AddDescriptionButton(ui.Button):
 
 class SaveButton(ui.Button):
     def __init__(self, embed: discord.Embed):
-        super().__init__(label="Save", style=discord.ButtonStyle.green)
+        super().__init__(label="Save", style=discord.ButtonStyle.green, disabled=True)
+        self.is_participant_added = False
+        self.is_info_added = False
         self.embed = embed
 
+    def maybe_able(self):
+        if self.is_participant_added and self.is_info_added:
+            self.disabled = False
+
     async def callback(self, interaction: Interaction):
+        await interaction.response.defer()
         if event_id := self.embed.model.save_in_database():
             for p in self.embed.model.participants:
                 self.view.bot.dispatch(
@@ -96,9 +103,9 @@ class SaveButton(ui.Button):
                     p.id,
                     self.embed.model
                 )
-            await interaction.response.edit_message(content="Event created!", embed=None, view=None)
+            await interaction.followup.edit_message(interaction.message.id, content="Event created!", embed=None, view=None)
         else:
-            await interaction.response.send_message(utils.error_message("Ups, something went wrong!"))
+            await interaction.followup.send_message(interaction.message.id, utils.error_message("Ups, something went wrong!"))
 
 
 # UI Objects
@@ -113,6 +120,8 @@ class AddParticipantSelect(ui.UserSelect):
         self.view.remove_item(self)
         self.view.add_participant_button.disabled = False
         self.embed.model.add_participant(self.values[0])
+        self.view.save_button.is_participant_added = True
+        self.view.save_button.maybe_able()
         await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
 
@@ -170,7 +179,6 @@ class AddDescriptionModal(ui.Modal):
 
     async def on_submit(self, interaction: Interaction) -> None:
         if field := self.validate():
-            # This weird thing below is to make the text red
             await interaction.response.send_message(utils.error_message(f"Invalid input: {field}"), ephemeral=True, )
             return
 
@@ -181,6 +189,9 @@ class AddDescriptionModal(ui.Modal):
         self.embed.model.duration = self.duration.value
         self.embed.model.set_start_date(self.start_time.value)
         self.embed.model.set_end_date(self.end_time.value)
+
+        self.view.save_button.is_info_added = True
+        self.view.save_button.maybe_able()
 
         await interaction.response.edit_message(view=self.view, embed=self.embed.reload_embed())
 
