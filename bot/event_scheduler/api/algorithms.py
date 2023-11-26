@@ -12,7 +12,7 @@ def pick_date(avalibilities: list, duration: int) -> datetime or None:
         no_datetimes, full_additional_duration_hours)
     if ok_datetime := select_datetime(ok_datetimes, no_datetimes):
         return ok_datetime
-    if maybe_datetime := select_datetime(maybe_datetimes, no_datetimes):
+    if maybe_datetime := select_datetime(ok_datetimes + maybe_datetimes, no_datetimes):
         return maybe_datetime
     else:
         return None

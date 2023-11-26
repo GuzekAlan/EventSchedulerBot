@@ -6,6 +6,7 @@ from pymongo import DESCENDING
 from event_scheduler.api.algorithms import pick_date
 from event_scheduler import utils
 from event_scheduler.db import get_database
+from bson.objectid import ObjectId
 
 
 class EventModel:
@@ -66,7 +67,7 @@ class EventModel:
             return participants_string + "..."
         return participants_string
 
-    def save_in_database(self, verbose=False):
+    def save_in_database(self, verbose=False) -> int:
         collection = get_database()["events"]
         data = {
             "creator_id": self.creator_id,
@@ -83,14 +84,18 @@ class EventModel:
         }
         if verbose:
             print(data)
-        return collection.update_one({"_id": self.event_id}, {
-            "$set": data}, upsert=True).acknowledged
+        if self.event_id:
+            collection.update_one({"_id": self.event_id}, {
+                "$set": data})
+        else:
+            self.event_id = collection.insert_one(data).inserted_id
+        return self.event_id
 
     def not_answered(self) -> int:
         return len(self.participants) - len(self.availibility)
 
     def choose_date(self) -> str:
-        date = pick_date(self.availibility)
+        date = pick_date(self.availibility, duration=int(self.duration))
         if date:
             self.picked_datetime = date
             if not get_database()["events"].update_one({"_id": self.event_id}, {
@@ -112,11 +117,13 @@ class EventModel:
                         "$push": {"events": data}}, upsert=True).acknowledged:
                     return "Error while updating user in database"
             return None
-        return "No date picked"
+        return f"No date picked for event {self.name}"
 
-    def get_from_database(event_id: int, bot: commands.Bot):
+    def get_from_database(event_id: str, bot: commands.Bot, status: str = None):
         collection = get_database()["events"]
-        if event := collection.find_one({"_id": event_id}):
+        filter = {"_id": ObjectId(event_id), "status": status} if status else {
+            "_id": ObjectId(event_id)}
+        if event := collection.find_one(filter):
             return model_from_database_data(event, bot)
         return None
 

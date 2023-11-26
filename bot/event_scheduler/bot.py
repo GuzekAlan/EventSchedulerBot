@@ -42,21 +42,17 @@ async def on_ready() -> None:
 
 
 @bot.event
-async def on_start_schedule_event(event_id: int, member_id, event_model: EventModel) -> None:
+async def on_start_schedule_event(event_id: int, member_id) -> None:
     """Starts the schedule event"""
     if user := bot.get_user(member_id):
-        model = AvailibilityModel(event_id, member_id, event_model.start_date,
-                                  event_model.end_date)
-        view = SelectDatesView(
-            bot=bot, event_name=event_model.get_name(), availibility_model=model)
-        await user.send('**Select your availibilty for event**', view=view, embed=view.embed)
+        await user.send(utils.information_message(f"Select dates for event: {event_id}"))
 
 
 @bot.event
 async def on_save_availibility(model: AvailibilityModel) -> None:
     """Checks if every user submited and optionaly picks date with most votes"""
-    if event_model := EventModel.get_from_database(model.event_id, bot):
-        if event_model.not_answered() == 0 and event_model.status == "created":
+    if event_model := EventModel.get_from_database(model.event_id, bot, "created"):
+        if event_model.not_answered() == 0:
             if bot_channel := bot.get_channel(get_bot_channel_id(
                     event_model.guild_id)):
                 if error := event_model.choose_date():
@@ -96,6 +92,20 @@ async def show_events(interaction: discord.Interaction, status: app_commands.Cho
 async def reschedule_event(interaction: discord.Interaction, status: app_commands.Choice[str]):
     view = RescheduleEventView(interaction.user.id, status.value, bot=bot)
     await interaction.response.send_message('**Reschedule Event**', view=view)
+
+
+@bot.tree.command(name='select-dates')
+@app_commands.describe(event_id="Event ID")
+async def select_dates(interaction: discord.Interaction, event_id: str):
+    if event_model := EventModel.get_from_database(event_id, bot, "created"):
+        model = AvailibilityModel(event_id, interaction.user.id, event_model.start_date,
+                                  event_model.end_date)
+        view = SelectDatesView(
+            bot=bot, event_name=event_model.get_name(), availibility_model=model)
+        await interaction.response.send_message(utils.information_message(f"Event found"), ephemeral=True)
+        await interaction.user.send('**Select your availibilty for event**', view=view, embed=view.embed)
+    else:
+        await interaction.response.send_message(utils.error_message("Event not found"), ephemeral=True)
 
 
 @bot.command(name="set-channel")
