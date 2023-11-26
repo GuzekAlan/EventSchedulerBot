@@ -32,8 +32,7 @@ class EventSelect(discord.ui.Select):
             self.view.bot.dispatch(
                 "start_schedule_event",
                 event.event_id,
-                p.id,
-                event
+                p.id
             )
         await interaction.response.edit_message(content=utils.information_message(f"Reschedule event {event.name}"), view=None, embed=None)
 

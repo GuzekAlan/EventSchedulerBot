@@ -6,6 +6,7 @@ from pymongo import DESCENDING
 from event_scheduler.api.algorithms import pick_date
 from event_scheduler import utils
 from event_scheduler.db import get_database
+from bson.objectid import ObjectId
 
 
 class EventModel:
@@ -118,9 +119,11 @@ class EventModel:
             return None
         return f"No date picked for event {self.name}"
 
-    def get_from_database(event_id: int, bot: commands.Bot):
+    def get_from_database(event_id: str, bot: commands.Bot, status: str = None):
         collection = get_database()["events"]
-        if event := collection.find_one({"_id": event_id}):
+        filter = {"_id": ObjectId(event_id), "status": status} if status else {
+            "_id": ObjectId(event_id)}
+        if event := collection.find_one(filter):
             return model_from_database_data(event, bot)
         return None
 

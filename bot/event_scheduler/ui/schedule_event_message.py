@@ -100,8 +100,7 @@ class SaveButton(ui.Button):
                 self.view.bot.dispatch(
                     "start_schedule_event",
                     event_id,
-                    p.id,
-                    self.embed.model
+                    p.id
                 )
             await interaction.followup.edit_message(interaction.message.id, content="Event created!", embed=None, view=None)
         else:

@@ -13,7 +13,14 @@
 ## Napisać testy do algorytmu
 - [x] Rozdzielić algorytm na funkcje
 - [x] Napisać unit testy
-- [ ] Zrobić benchmark ile liczy się dla dużych numerów
+
+## Problemy:
+- [ ] Przetestować ręcznie
+- [x] wysyłać powiadomienie (użytkownik sam wybiera kiedy otwiera modal)
+- [x] maybe powinno używać ok hours
+- [x] save button w schedule message dostepny po uzupelnieniu informacji
+- [ ] usuwać godziny zajete przez uzytkownikow
 
 ## Zacząć pisać latex 
 - [ ] Dopiero jak aplikacja MVP gotowa
+- [ ] Właczyć review
