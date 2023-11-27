@@ -104,7 +104,7 @@ class SaveButton(ui.Button):
                 )
             await interaction.followup.edit_message(interaction.message.id, content="Event created!", embed=None, view=None)
         else:
-            await interaction.followup.send_message(interaction.message.id, utils.error_message("Ups, something went wrong!"))
+            await interaction.followup.send_message(interaction.message.id, content=utils.error_message("Ups, something went wrong!"))
 
 
 # UI Objects
