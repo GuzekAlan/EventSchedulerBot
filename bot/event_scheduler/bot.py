@@ -97,15 +97,15 @@ async def reschedule_event(interaction: discord.Interaction, status: app_command
 @bot.tree.command(name='select-dates')
 @app_commands.describe(event_id="Event ID")
 async def select_dates(interaction: discord.Interaction, event_id: str):
+    await interaction.response.send_message(utils.information_message("Looking for event..."), ephemeral=True)
     if event_model := EventModel.get_from_database(event_id, bot, "created"):
         model = AvailibilityModel(event_id, interaction.user.id, event_model.start_date,
                                   event_model.end_date)
         view = SelectDatesView(
             bot=bot, event_name=event_model.get_name(), availibility_model=model)
-        await interaction.response.send_message(utils.information_message(f"Event found"), ephemeral=True)
         await interaction.user.send('**Select your availibilty for event**', view=view, embed=view.embed)
     else:
-        await interaction.response.send_message(utils.error_message("Event not found"), ephemeral=True)
+        await interaction.user.send(utils.error_message("Event not found"))
 
 
 @bot.command(name="set-channel")
