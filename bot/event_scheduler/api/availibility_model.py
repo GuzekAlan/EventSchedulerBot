@@ -1,6 +1,7 @@
 from datetime import time, datetime, timedelta
 from event_scheduler import utils
 from event_scheduler.db import get_database
+from bson.objectid import ObjectId
 
 
 class AvailibilityModel:
@@ -13,7 +14,7 @@ class AvailibilityModel:
         self.event_id = event_id
         self.user_id = user_id
         self.availibility = {
-            utils.date_to_str(start_date + timedelta(days=i)): {"ok": [], "maybe": [], "no": []} for i in range((end_date - start_date).days)
+            utils.date_to_str(start_date + timedelta(days=i)): {"ok": [], "maybe": [], "no": []} for i in range((end_date - start_date).days + 1)
         }
         self.not_available_datetimes = self.get_user_not_available_datetimes()
 
@@ -27,6 +28,7 @@ class AvailibilityModel:
             return False
         if new_date >= self.start_date and new_date <= self.end_date:
             self.current_date = new_date
+            print(f"END DATE: {self.end_date} NEW DATE: {new_date}")
         return True
 
     def add_times(self, times: list, availibility: str = "maybe") -> bool:
@@ -60,8 +62,10 @@ class AvailibilityModel:
         data = {
             str(self.user_id): self.availibility
         }
-        return collection.update_one({"_id": self.event_id}, {
-            "$push": {"availibility": data}}).acknowledged
+        updated = collection.update_one({"_id": ObjectId(self.event_id)}, {
+            "$push": {"availibility": data}})
+        print(f"UPDATED: {updated}")
+        return updated.acknowledged
 
     def get_user_not_available_datetimes(self):
         if user := get_database()["users"].find_one({"user_id": self.user_id}):
