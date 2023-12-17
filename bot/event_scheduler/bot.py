@@ -102,7 +102,7 @@ async def select_dates(interaction: discord.Interaction, event_id: str):
         model = AvailibilityModel(event_id, interaction.user.id, event_model.start_date,
                                   event_model.end_date)
         view = SelectDatesView(
-            bot=bot, event_name=event_model.get_name(), availibility_model=model)
+            bot=bot, event_name=event_model.get_name(), availibility_model=model, user_ids=event_model.get_participants_ids())
         await interaction.user.send('**Select your availibilty for event**', view=view, embed=view.embed)
     else:
         await interaction.user.send(utils.error_message("Event not found"))

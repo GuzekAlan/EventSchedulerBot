@@ -28,7 +28,6 @@ class AvailibilityModel:
             return False
         if new_date >= self.start_date and new_date <= self.end_date:
             self.current_date = new_date
-            print(f"END DATE: {self.end_date} NEW DATE: {new_date}")
         return True
 
     def add_times(self, times: list, availibility: str = "maybe") -> bool:

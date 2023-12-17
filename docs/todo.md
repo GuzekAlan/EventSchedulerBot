@@ -19,12 +19,12 @@
 - [x] wysyłać powiadomienie (użytkownik sam wybiera kiedy otwiera modal)
 - [x] maybe powinno używać ok hours
 - [x] save button w schedule message dostepny po uzupelnieniu informacji
-- [ ] usuwać godziny zajete przez uzytkownikow
+- [x] usuwać godziny zajete przez uzytkownikow
 - [x] strzalki w godzinach nie dzialaja
 - [x] ile osob odpowiedzialo w show events nie dziala
 - [ ] Przycisk do cancelowania eventy w tworzeniu ( i ogólnie cancelowanie eventów)
-- [ ] Pokazuj jedynie eventy dla danej gildii ( albo miej feature ze zawsze wszystko pokzauje)
+- [ ] timeout na modale i ich zamknięcie po pewnym czasie
 
 ## Zacząć pisać latex 
-- [ ] Dopiero jak aplikacja MVP gotowa
+- [x] Dopiero jak aplikacja MVP gotowa
 - [ ] Właczyć review

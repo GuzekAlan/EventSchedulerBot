@@ -119,6 +119,14 @@ class EventModel:
             return None
         return f"No date picked for event {self.name}"
 
+    def get_event_times_for_users(user_ids: list[int]) -> list[datetime]:
+        collection = get_database()["events"]
+        print("user_ids", user_ids)
+        if events := collection.find({"participants": {"$in": user_ids}, "status": "confirmed"}):
+            dates = [event["date"] for event in events]
+            return dates
+        return []
+
     def get_from_database(event_id: str, bot: commands.Bot, status: str = None):
         collection = get_database()["events"]
         filter = {"_id": ObjectId(event_id), "status": status} if status else {
