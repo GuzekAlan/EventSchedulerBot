@@ -14,5 +14,5 @@ def get_database() -> Database:
 
 if __name__ == '__main__':
     db = get_database()
-    # test db conenction by printing all collections
+    # test db connection by printing all collections
     print(db.list_collection_names())

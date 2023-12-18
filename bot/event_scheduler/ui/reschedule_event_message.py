@@ -26,7 +26,7 @@ class EventSelect(discord.ui.Select):
         event = self.view.events[int(self.values[0])]
         event.status = "created"
         event.picked_datetime = None
-        event.availibility = []
+        event.availability = []
         event.save_in_database()
         for p in event.participants:
             self.view.bot.dispatch(

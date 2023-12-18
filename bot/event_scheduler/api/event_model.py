@@ -21,7 +21,7 @@ class EventModel:
         self.start_date: datetime = None
         self.end_date: datetime = None
         self.status: str = "created"  # created, confirmed, canceled
-        self.availibility: list = []
+        self.availability: list = []
         self.picked_datetime: Optional[datetime] = None
 
     def get_participants_ids(self) -> [int]:
@@ -79,11 +79,11 @@ class EventModel:
             "start_date": self.start_date,
             "end_date": self.end_date,
             "status": self.status,
-            "availibility": self.availibility,
+            "availability": self.availability,
             "date": self.picked_datetime
         }
         if verbose:
-            print(data)
+            print("data", data)
         if self.event_id:
             collection.update_one({"_id": self.event_id}, {
                 "$set": data})
@@ -92,15 +92,15 @@ class EventModel:
         return self.event_id
 
     def not_answered(self) -> int:
-        return len(self.participants) - len(self.availibility)
+        return len(self.participants) - len(self.availability)
 
     def choose_date(self) -> str:
-        date = pick_date(self.availibility, duration=int(self.duration))
+        date = pick_date(self.availability, duration=int(self.duration))
         if date:
             self.picked_datetime = date
             if not get_database()["events"].update_one({"_id": self.event_id}, {
                     "$set": {"status": "confirmed", "date": date}}).acknowledged:
-                return "Error while saving event to databse"
+                return "Error while saving event to database"
             for user_id in self.get_participants_ids():
                 data = {
                     "_id": self.event_id,
@@ -121,7 +121,6 @@ class EventModel:
 
     def get_event_times_for_users(user_ids: list[int]) -> list[datetime]:
         collection = get_database()["events"]
-        print("user_ids", user_ids)
         if events := collection.find({"participants": {"$in": user_ids}, "status": "confirmed"}):
             dates = [event["date"] for event in events]
             return dates
@@ -153,6 +152,6 @@ def model_from_database_data(event, bot: commands.Bot):
     event_model.start_date = event["start_date"]
     event_model.end_date = event["end_date"]
     event_model.status = event["status"]
-    event_model.availibility = event["availibility"]
+    event_model.availability = event["availability"]
     event_model.picked_datetime = event["date"] if "date" in event else None
     return event_model

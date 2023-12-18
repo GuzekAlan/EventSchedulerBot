@@ -4,7 +4,7 @@ import logging
 import discord
 import event_scheduler.utils as utils
 from event_scheduler.api.event_model import EventModel
-from event_scheduler.api.availibility_model import AvailibilityModel
+from event_scheduler.api.availability_model import AvailabilityModel
 from event_scheduler.api.settings import upsert_bot_channel_id, get_bot_channel_id
 from event_scheduler.ui.show_events_message import ShowEventsEmbed
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
@@ -49,8 +49,8 @@ async def on_start_schedule_event(event_id: int, member_id) -> None:
 
 
 @bot.event
-async def on_save_availibility(model: AvailibilityModel) -> None:
-    """Checks if every user submited and optionaly picks date with most votes"""
+async def on_save_availability(model: AvailabilityModel) -> None:
+    """Checks if every user submitted and optional picks date with most votes"""
     if event_model := EventModel.get_from_database(model.event_id, bot, "created"):
         if event_model.not_answered() == 0:
             if bot_channel := bot.get_channel(get_bot_channel_id(
@@ -99,11 +99,11 @@ async def reschedule_event(interaction: discord.Interaction, status: app_command
 async def select_dates(interaction: discord.Interaction, event_id: str):
     await interaction.response.send_message(utils.information_message("Looking for event..."), ephemeral=True)
     if event_model := EventModel.get_from_database(event_id, bot, "created"):
-        model = AvailibilityModel(event_id, interaction.user.id, event_model.start_date,
+        model = AvailabilityModel(event_id, interaction.user.id, event_model.start_date,
                                   event_model.end_date)
         view = SelectDatesView(
-            bot=bot, event_name=event_model.get_name(), availibility_model=model, user_ids=event_model.get_participants_ids())
-        await interaction.user.send('**Select your availibilty for event**', view=view, embed=view.embed)
+            bot=bot, event_name=event_model.get_name(), availability_model=model, user_ids=event_model.get_participants_ids())
+        await interaction.user.send('**Select your availability for event**', view=view, embed=view.embed)
     else:
         await interaction.user.send(utils.error_message("Event not found"))
 
