@@ -36,6 +36,8 @@ def select_datetime(datetimes: list, no_datetimes: list) -> datetime:
                 return Counter(legit_datetimes).most_common(1)[0][0]
             except Exception:
                 return legit_datetimes[0]
+        else:
+            return None
     else:
         return None
 
