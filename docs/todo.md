@@ -22,9 +22,10 @@
 - [x] usuwać godziny zajete przez uzytkownikow
 - [x] strzalki w godzinach nie dzialaja
 - [x] ile osob odpowiedzialo w show events nie dziala
-- [ ] Przycisk do cancelowania eventy w tworzeniu ( i ogólnie cancelowanie eventów)
+- [x] Przycisk do cancelowania eventy w tworzeniu ( i ogólnie cancelowanie eventów)
 - [ ] timeout na modale i ich zamknięcie po pewnym czasie
 
 ## Zacząć pisać latex 
 - [x] Dopiero jak aplikacja MVP gotowa
-- [ ] Właczyć review
+- [x] Właczyć review
+- [ ] Poprawic screeny z aplikacji
