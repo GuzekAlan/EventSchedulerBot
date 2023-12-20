@@ -10,6 +10,7 @@ from event_scheduler.ui.show_events_message import ShowEventsEmbed
 from event_scheduler.ui.schedule_event_message import ScheduleEventEmbed, ScheduleEventView
 from event_scheduler.ui.select_dates_message import SelectDatesView
 from event_scheduler.ui.reschedule_event_message import RescheduleEventView
+from event_scheduler.ui.cancel_event_message import CancelEventView
 from event_scheduler.db import get_database
 from discord.ext import commands
 from discord import app_commands
@@ -92,6 +93,12 @@ async def show_events(interaction: discord.Interaction, status: app_commands.Cho
 async def reschedule_event(interaction: discord.Interaction, status: app_commands.Choice[str]):
     view = RescheduleEventView(interaction.user.id, status.value, bot=bot)
     await interaction.response.send_message('**Reschedule Event**', view=view)
+
+
+@bot.tree.command(name='cancel-event')
+async def cancel_event(interaction: discord.Interaction):
+    view = CancelEventView(interaction.user.id, bot=bot)
+    await interaction.response.send_message('**Cancel Event**', view=view)
 
 
 @bot.tree.command(name='select-dates')

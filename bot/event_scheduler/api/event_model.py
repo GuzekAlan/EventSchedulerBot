@@ -134,9 +134,13 @@ class EventModel:
             return model_from_database_data(event, bot)
         return None
 
-    def get_from_database_by_creator(creator_id: int, bot: commands.Bot, limit: int = 0, status: str = "created"):
+    def get_from_database_by_creator(creator_id: int, bot: commands.Bot, limit: int = 0, status: str = None):
         collection = get_database()["events"]
-        if events := collection.find({"creator_id": creator_id, "status": status}).sort("date", DESCENDING).limit(limit):
+        if status:
+            query = {"creator_id": creator_id, "status": status}
+        else:
+            query = {"creator_id": creator_id}
+        if events := collection.find(query).sort("date", DESCENDING).limit(limit):
             return [model_from_database_data(event, bot) for event in events]
         return None
 
