@@ -46,6 +46,7 @@ class ScheduleEventView(ui.View):
         self.add_item(self.add_description_button)
         self.save_button = SaveButton(self.embed)
         self.add_item(self.save_button)
+        self.add_item(CancelButton(self.embed))
 
 # Buttons
 
@@ -80,6 +81,14 @@ class AddDescriptionButton(ui.Button):
 
     async def callback(self, interaction: Interaction):
         await interaction.response.send_modal(AddDescriptionModal(self.view, self.embed))
+
+
+class CancelButton(ui.Button):
+    def __init__(self, embed: discord.Embed):
+        super().__init__(label="Cancel", style=discord.ButtonStyle.danger)
+
+    async def callback(self, interaction: Interaction):
+        await interaction.response.edit_message(content=utils.error_message("Scheduling an event has been canceled"), view=None, embed=None)
 
 
 class SaveButton(ui.Button):
