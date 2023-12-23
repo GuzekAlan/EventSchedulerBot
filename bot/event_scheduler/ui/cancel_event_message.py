@@ -23,10 +23,16 @@ class EventSelect(discord.ui.Select):
                          ], min_values=0, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
         event = self.view.events[int(self.values[0])]
+        if event.status == "confirmed":
+            for p in event.get_participants_ids():
+                if user := self.view.bot.get_user(p):
+                    print(user)
+                    await user.send(utils.error_message(f"Event {event.name} has been canceled"))
         event.status = "canceled"
         event.save_in_database()
-        await interaction.response.edit_message(content=utils.information_message(f"Event {event.name} has been canceled"), view=None, embed=None)
+        await interaction.followup.edit_message(interaction.message.id, content=utils.information_message(f"Event {event.name} has been canceled"), view=None, embed=None)
 
 
 def event_label(event: EventModel) -> str:
