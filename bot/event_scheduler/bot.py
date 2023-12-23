@@ -72,7 +72,7 @@ async def add_event(interaction: discord.Interaction) -> None:
     model = EventModel(creator_id=interaction.user.id,
                        guild_id=interaction.guild.id)
     view = ScheduleEventView(bot=bot, model=model)
-    await interaction.response.send_message('**Schedule Event**', view=view, embed=view.embed)
+    await interaction.response.send_message(view=view, embed=view.embed)
 
 
 @bot.tree.command(name='show-events')
@@ -92,13 +92,13 @@ async def show_events(interaction: discord.Interaction, status: app_commands.Cho
 @app_commands.choices(status=[app_commands.Choice(name=s.capitalize(), value=s) for s in ["created", "confirmed", "canceled"]])
 async def reschedule_event(interaction: discord.Interaction, status: app_commands.Choice[str]):
     view = RescheduleEventView(interaction.user.id, status.value, bot=bot)
-    await interaction.response.send_message('**Reschedule Event**', view=view)
+    await interaction.response.send_message(view=view)
 
 
 @bot.tree.command(name='cancel-event')
 async def cancel_event(interaction: discord.Interaction):
     view = CancelEventView(interaction.user.id, bot=bot)
-    await interaction.response.send_message('**Cancel Event**', view=view)
+    await interaction.response.send_message(view=view)
 
 
 @bot.tree.command(name='select-dates')
@@ -110,7 +110,7 @@ async def select_dates(interaction: discord.Interaction, event_id: str):
                                   event_model.end_date)
         view = SelectDatesView(
             bot=bot, event_name=event_model.get_name(), availability_model=model, user_ids=event_model.get_participants_ids())
-        await interaction.user.send('**Select your availability for event**', view=view, embed=view.embed)
+        await interaction.user.send(view=view, embed=view.embed)
     else:
         await interaction.user.send(utils.error_message("Event not found"))
 

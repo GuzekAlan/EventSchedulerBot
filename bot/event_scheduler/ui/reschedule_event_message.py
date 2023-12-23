@@ -12,7 +12,10 @@ class RescheduleEventView(discord.ui.View):
         self.bot = bot
         self.events = EventModel.get_from_database_by_creator(
             creator_id=user_id, bot=self.bot, status=status)
-        self.add_item(EventSelect(self.events))
+        if self.events:
+            self.add_item(EventSelect(self.events))
+        else:
+            self.add_item(discord.ui.Button(label="No event to reschedule", disabled=True, style=discord.ButtonStyle.red))
 
 
 class EventSelect(discord.ui.Select):
