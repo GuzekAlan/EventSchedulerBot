@@ -26,7 +26,7 @@ class ShowEventsEmbed(discord.Embed):
             self.add_field(
                 name=event.get_name(),
                 value=f"""
-                {len(event.availibility)}/{len(event.participants)} answered
+                {len(event.availability)}/{len(event.participants)} answered
                 Duration: {event.duration} minutes
                 Start Date: {utils.date_to_str(event.start_date)}
                 End Date: {utils.date_to_str(event.end_date)}

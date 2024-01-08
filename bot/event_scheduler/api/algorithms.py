@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from collections import Counter
 
 
-def pick_date(avalibilities: list, duration: int) -> datetime or None:
+def pick_date(availabilities: list, duration: int) -> datetime or None:
     full_additional_duration_hours = math.ceil(max(0, duration-60) / 60)
-    ok_datetimes, maybe_datetimes, no_datetimes = parse_availibilities(
-        avalibilities)
+    ok_datetimes, maybe_datetimes, no_datetimes = parse_availabilities(
+        availabilities)
     no_datetimes = add_duration_to_no_times(
         no_datetimes, full_additional_duration_hours)
     if ok_datetime := select_datetime(ok_datetimes, no_datetimes):
@@ -36,6 +36,8 @@ def select_datetime(datetimes: list, no_datetimes: list) -> datetime:
                 return Counter(legit_datetimes).most_common(1)[0][0]
             except Exception:
                 return legit_datetimes[0]
+        else:
+            return None
     else:
         return None
 
@@ -44,14 +46,14 @@ def remove_repetitions(datetimes: list) -> list:
     return list(set(datetimes))
 
 
-def parse_availibilities(availibilities: list) -> (list, list, list):
+def parse_availabilities(availabilities: list) -> (list, list, list):
     ok_datetimes = []
     maybe_datetimes = []
     no_datetimes = []
-    for user_dict in availibilities:
+    for user_dict in availabilities:
         dates_dict = list(user_dict.values())[0]
-        for _, availibility_dict in dates_dict.items():
-            ok_datetimes.extend(availibility_dict["ok"])
-            maybe_datetimes.extend(availibility_dict["maybe"])
-            no_datetimes.extend(availibility_dict["no"])
+        for _, availability_dict in dates_dict.items():
+            ok_datetimes.extend(availability_dict["ok"])
+            maybe_datetimes.extend(availability_dict["maybe"])
+            no_datetimes.extend(availability_dict["no"])
     return ok_datetimes, maybe_datetimes, no_datetimes

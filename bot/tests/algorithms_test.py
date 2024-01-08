@@ -36,8 +36,8 @@ def example_availability():
     ]
 
 
-def test_parse_availibilities(example_availability):
-    ok_datetimes, maybe_datetimes, no_datetimes = algorithms.parse_availibilities(
+def test_parse_availabilities(example_availability):
+    ok_datetimes, maybe_datetimes, no_datetimes = algorithms.parse_availabilities(
         example_availability)
     ok_count = sum([pattern.count('ok') for pattern in [
                    patterns['user1'], patterns['user2'], patterns['user3']]])
@@ -56,14 +56,14 @@ def test_remove_repetitions():
 
 
 def test_select_datetime_ok_datetimes(example_availability):
-    ok_datetimes, _, no_datetimes = algorithms.parse_availibilities(
+    ok_datetimes, _, no_datetimes = algorithms.parse_availabilities(
         example_availability)
     assert algorithms.select_datetime(
         ok_datetimes, no_datetimes) == datetime(2023, 11, 13, 1)
 
 
 def test_select_datetime_maybe_datetimes(example_availability):
-    _, maybe_datetimes, no_datetimes = algorithms.parse_availibilities(
+    _, maybe_datetimes, no_datetimes = algorithms.parse_availabilities(
         example_availability)
     assert algorithms.select_datetime(
         maybe_datetimes, no_datetimes) == datetime(2023, 11, 13, 2)

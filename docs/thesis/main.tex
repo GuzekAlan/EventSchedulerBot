@@ -1,0 +1,711 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=3.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+% Hybertext
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,      
+    urlcolor=black,
+    citecolor=black,
+}
+% Bibliografia
+\usepackage[
+backend=biber,
+language=polish,
+sortlocale=pl,
+sorting=none
+]{biblatex}
+\addbibresource{refs.bib}
+% Kod
+\newcommand{\classname}[1]{\texttt{#1}}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\pagenumbering{arabic}
+
+%% ########################################################
+\begin{document}
+\begin{center}
+\includegraphics[width=\textwidth]{img/logo_AGH.jpg}\\
+\bf{\sf{WYDZIAŁ FIZYKI I INFORMATYKI STOSOWANEJ}}\\[5mm]
+%% ======================================================
+\bf{\sf{KATEDRA INFORMATYKI STOSOWANEJ I FIZYKI KOMPUTEROWEJ}}\\[14mm]
+%% ======================================================
+\sf{\huge Projekt dyplomowy}\\[12mm] 
+%% Projekt dyplomowy = inżynierska
+%% Praca dyplomowa = magisterska
+%% ======================================================
+\sf{\Large Bot do planowania wydarzeń w aplikacji Discord\\[2mm] %% Niepotrzebne usunąć
+Discord event scheduling bot %% Jeżeli praca została napisana w języku innym niż język angielski
+%% ======================================================
+%% W przypadku pracy napisanej
+%% - po polsku: dwa tytuły,
+%% - po angielsku: dwa tytuły,
+%% - po hiszpańsku/niemiecku/rosyjsku/etc: trzy tytuły.
+%% ======================================================
+}\\[40mm]
+\end{center}
+\sf{
+\begin{tabular}{ll}
+Autor: & Alan Sławomir Guzek\\
+Kierunek studiów: &	Informatyka Stosowana\\
+%% Fizyka Techniczna
+%% Fizyka Medyczna
+%% Informatyka Stosowana, etc
+Opiekun pracy: &  dr hab. inż. Małgorzata Krawczyk\\
+\end{tabular}
+}\\[10mm]
+\begin{center}
+\sf{Kraków, 2024}
+\end{center}
+
+\newpage
+\tableofcontents
+\newpage
+
+%% ########################################################
+\section*{Wstęp}
+\addcontentsline{toc}{section}{Wstęp}
+\setcounter{section}{0}  
+
+Kalendarze osobiste wielu osób są bardzo zapełnione przez co bardzo często znalezienie dogodnego terminu, aby umówić się w gronie kilku osób, np. na wspólną naukę czy grę graniczy z niemożliwym. Zazwyczaj jeden z uczestników wydarzenia próbuje znaleźć idealny termin podając losowe terminy i czekając na informację zwrotną, czy wszystkim to odpowiada. Takie podejście jest nieefektywne. Bardziej odpowiednim rozwiązaniem tego problemu wydaje się zebranie informacji od każdego z potencjalnych uczestników spotkania, a następnie używając odpowiedniego algorytmu, wybranie najlepszego terminu. 
+
+Jeśli dodatkowo chcemy zorganizować takie spotkanie z osobami nie mieszkającymi w pobliżu, a więc czy to z innego miasta, czy innego kontynentu, potrzebne jest użycie np. komunikatora internetowego takiego jak Zoom, Microsoft Teams, Discord czy Google Meet.
+
+Discord jest platformą wybieraną przez miliony \cite{DiscordPopularity}. Jest to aplikacja internetowa oraz komputerowa, w której możliwe jest nie tylko połączenie się z innymi przy użyciu mikrofonu i kamery, ale także oferuje ona wygodne do personalizacji gildie, na których dzięki kanałom tekstowym łatwo można zarządzać wiadomościami. Często kanały takie dedykowane są specyficznym tematykom,  jak np. ,,pomoc'', gdzie można zadawać pytania bardziej doświadczonym osobom w gildii, ,,informacje'', gdzie jedynie uprawnione osoby mogą pisać wiadomości z najważniejszymi informacjami czy też ,,bot'' dla botów discordowych. 
+
+Boty są to aplikacje, które mając uprawnienia w gildii potrafią nasłuchiwać na różnego rodzaju wydarzenia takie jak dojście nowego członka, wysłanie wiadomości czy pojawienie się nowego członka gildii na kanale głosowym. Boty często służą także do zapisywania notatek, przydzielania rang dla danych osób, czasami służą do pomagania w nauce, ale mogą również posłużyć do wybierania dogodnego terminu spotkania dla osób z gildii. 
+
+Dzięki interfejsowi udostępnianemu przez Discord każdy jego użutkownik może  utworzyć własnego bota, a następnie zaprosić go do swojej gildii.
+Otwarte API umożliwia napisanie takiej aplikacji w różnych językach programowania, jednak w przypadku pisania aplikacji umożliwiającej wybór terminu odpowiadającego wielu osobom jednym z najlepszych wyborów jest język Python. Posiada on dedykowaną do tego bibliotekę \textit{discord.py} \cite{DiscordPy}, która oferuje wiele funkcjonalności związanych z tworzeniem aplikacji discordowych, takich jak 
+\begin{itemize}
+    \item rozsądne ograniczenie ilości wysyłanych zapytań zmniejszające szansę na pojawienie się błędu 429
+    \item obiektowe podejście ułatwiające tworzenie i ponowne używanie elementów
+    \item optymalizację pod względem czasu przetwarzania oraz używanej pamięci
+\end{itemize}
+
+Aby stworzyć system do ustalania dat spotkań przy użyciu bota należy wyszczególnić kilka ważnych warunków, które musi on spełniać:
+\begin{enumerate}
+    \item każdy członek gildii powinien mieć możliwość utworzenia wydarzenia, dla którego datę chcemy wybrać,
+    \item każdy z zaproszonych musi odpowiedzieć jakie terminy mu odpowiadają,
+    \item algorytm powinien wybrać najlepszą dla grupy godzinę, uwzględniając czas trwania wydarzenia.
+\end{enumerate}
+
+Istnieją dwa sposoby na komunikowanie się z naszą aplikacją: komendy z prefixem oraz komendy poprzedzone ukośnikiem, czyli \textit{"slash commands"} \cite{SlashCommands}. Drugi sposób jest nowszy i oferuje bardziej przyjemny dla użytkownika interfejs, dlatego zdecydowano się właśnie na niego. Warto zaznaczyć, że bot może wspierać oba sposoby tworzenia komend.
+
+Oprócz komendy do tworzenia wydarzeń, ważne będą także elementy widoków, takie jak przyciski, pola wyboru, modale, a także pola tekstowe. Informacje, które należy zebrać od użytkownika wybierającego termin wydarzenia to:
+\begin{itemize}
+    \item zakres dat, w jakich wydarzenie powinno się odbyć,
+    \item długość trwania wydarzenia,
+    \item lista osób, które biorą w nim udział,
+    \item dodatkowe informacje, takie jak nazwa i opis wydarzenia.
+\end{itemize}
+
+Po zebraniu informacji bot powinien umożliwić każdemu z zaproszonych uczestników wybranie godzin, w których chciałby, aby wydarzenie się odbyło, a także tych, w których będzie miał czas (pozwoli to na zaznaczenie swoich preferencji co do terminu spotkania). Po zebraniu wszystkich danych od każdego z uczestników wydarzenia, algorytm powinien wybrać możliwy termin wydarzenia lub zakomunikować, że nie ma daty odpowiadającej wszystkim zainteresowanym.
+
+Oprócz podstawowej funkcjonalności osoba tworząca spotkanie powinna móc przeglądać stworzone wydarzenia, a także mieć możliwość ponownego zebrania informacji i wyszukania terminu.
+
+\section{Użyte technologie}
+
+Do napisania aplikacji został użyty język Python w standardzie 3.10 \cite{PythonRelease}. Wybrano go ze względu na jego szerokie zastosowanie w wielu dziedzinach, jak również łatwą obsługę asynchroniczności, która przy częstym reagowaniu na wiadomości i komendy użytkowników staje się niezbędna. Posłużył on zarówno do stworzenia bota, jak i obsługi bazy danych, a także stworzenia algorytmu pozwalającego wybrać odpowiedni dzień i godzinę spotkania. Dodatkowo, moduł służący do komunikowania się z Discordem (\texttt{discord.py}) jest często używany przez deweloperów aplikacji \cite{} oraz stale się rozwija \cite{}.
+
+\subsection{Discord.py}
+
+Głównym modułem wykorzystanym podczas tworzenia aplikacji był moduł \texttt{discord.py}, który jest implementacją udostępnionego przez Discroda interfejsu do obsługi botów. Dzięki podejściu obiektowemu pozwala na dostosowywanie elementów UI poprzez dziedziczenie po klasach podstawowych, takich jak \textit{discord.ui.Button} oraz \textit{discord.ui.TextInput}. Dodatkowo, moduł ten korzysta z dekoratorów dla funkcji w celu tworzenia zarówno interfejsu użytkownika, jak i rejestrowania nowych komend. Funkcje te są asynchroniczne, przez co możliwe jest wykonywanie kilku poleceń w tym samym momencie (zwłaszcza, jeżeli wykonanie polecenia zajmuje aplikacji dużo czasu). Posiada on również dobrze napisaną dokumentację \cite{DiscordPyDocumentation}.
+
+
+\subsection{MongoDB}
+
+Dokumentowa baza danych, jaką jest MongoDB \cite{MongoDB}, została wybrana ze względu na łatwość w rozbudowie oraz prostotę w użyciu. Zamiast wielu encji połączonych ze sobą, jak ma to miejsce w przypadku podejścia relacyjnego, postanowiono składować wszystkie informacje o wydarzeniu w jednym dokumencie. Brak zdefiniowanego schematu w bazie danych umożliwia dynamiczne dodawanie elementów do obiektu w przystępny sposób. Dodatkowo, obiekty w bazie danych zapisane w formacie JSON w łatwy sposób są konwertowane na pythonowe słowniki.
+
+Do komunikacji z bazą danych użyto modułu w języku Python o nazwie \textit{pymongo} \cite{PyMongo}, ze względu na jego popularność \cite{PyMongoPopularity}. Pozwala on na stworzenie klienta komunikującego się z bazą przy użyciu linka \textit{url}, a następnie wykonywanie wszystkich operacji zapisu, modyfikacji oraz odczytu z bazy danych.
+
+\subsection{Git}
+
+W celu kontrolowania wersji tworzonego oprogramowania użyto popularnego narzędzia git \cite{BestVersionControllTool}. W celu zapisywania projektu w zdalnym repozytorium zdecydowano się na skorzystanie z platformy GitHub \cite{GitHub}.
+
+\subsection{Docker}
+
+Aby usprawnić proces tworzenia oraz wdrażania aplikacji w nowym środowisku zdecydowano się na konteneryzację przy użyciu narzędzia Docker \cite{DockerDocumentation}. Po wpisaniu komendy:
+\begin{lstlisting}[language=Bash,caption={Uruchamianie aplikacji w kontenerze Docker},label={lst: docker}]
+  $ docker-compose up -d
+\end{lstlisting}
+powstaną dwa kontenery, jeden dla bazy danych MongoDB i drugi zawierający aplikację napisaną w języku Python. Obraz dockerowy używa języka Python w wersji 3.10.0.
+
+
+\section{Implementacja}
+
+Na początku stworzono aplikację w platformie Discord. W tym celu zalogowano się i przekierowano pod adres \href{https://discord.com/developers/applications}{https://discord.com/developers/applications}. Tam, po naciśnięciu przycisku \textit{New Application} oraz wpisaniu wymaganych informacji, stworzono nową aplikację. W celu rozpoczęcia pracy z nowo utworzonym botem wygenerowano token (Rys. \ref{img: discord_gen_token}) umożliwiający połączenie się z nim z poziomu programu napisanego w języku Python.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/discord_create_bot.png}
+    \caption{Generowanie tokena dla aplikacji}
+    \label{img: discord_gen_token}
+\end{figure}
+
+Do przechowywania danych wrażliwych, takich jak link do bazy danych czy token dla aplikacji discordowej, użyto pliku \texttt{.env} oraz dostarczono \texttt{.env.sample}, który pokazuje jak powinien wyglądać prawidłowy plik ze zmiennymi środowiskowymi. 
+
+Folder aplikacji \texttt{bot} (Rys. \ref{img: struktura_plikow}) składał się z modułu aplikacji \texttt{event\_scheduler} oraz modułu testów jednostkowych \texttt{tests}. Moduły pythonowe to tak naprawdę foldery zawierające w sobie plik \texttt{\_\_init\_\_.py}. Moduł aplikacji zawierał podmoduły \texttt{api} oraz \texttt{ui}, a także pliki \texttt{bot.py}, \texttt{db.py}, \texttt{utils.py}, które odpowiadały odpowiednio za stworzenie klienta bota oraz jego komend, stworzenie klienta do bazy danych, dodatkowe przydatne funkcjonalności. 
+
+Podmoduł \texttt{api} zawierał w sobie pliki modeli (\texttt{availability\_model.py}, \texttt{event\_model.py}), których zadaniem było przetrzymywanie danych dotyczących wydarzeń oraz ich zapis i odczyt z bazy, plik \texttt{settings.py} posiadający funkcjonalność do zapisywania ustawień bota dla danej gildii oraz \texttt{algorithms.py} zawierający algorytm wyboru odpowiedniej daty.
+
+Podmoduł \texttt{ui} posiadał wszystkie elementy interfejsu użytkownika podzielone na komendy, dla których są one przeznaczone (\texttt{[nazwa\_komendy]\_message.py}).
+
+Moduł testów \texttt{tests} zawierał pliki \texttt{algorithms\_test.py} i \texttt{utils\_test.py} sprawdzające odpowiednio funkcje używane w algorytmie wyboru odpowiedniego terminu, jak i sam algorytm oraz przydatne funkcje służące na przykład do konwersji dat i godzin.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/files.png}
+    \caption{Struktura plików aplikacji}
+    \label{img: struktura_plikow}
+\end{figure}
+
+\subsection{Bot i komendy}
+
+Plik \texttt{bot.py} odpowiadał za stworzenie obiektu klasy \classname{discord.ext.commands.Bot}, która dziedziczy po bardziej ogólnej klasie \classname{discord.Client}. Praca z klasą bazową \classname{Client} wymagałaby implementowania wielu elementów, które są już dostępne w klasie \classname{Bot} \cite{BotVsClientArticle}. 
+
+W celu zapisywania informacji oraz błędów aplikacji użyto modułu "logging", dzięki któremu wiadomości aplikacji były dostarczane do pliku \texttt{bot.log} zamiast konsoli.
+
+Po utworzeniu obiektu i przypisaniu go do zmiennej \classname{bot} tworzenie komend odbywało się poprzez stworzenie funkcji asynchronicznych z użyciem dekoratora \classname{bot.tree.command} (List. \ref{lst: schedule event call}) dla tych poprzedzonych ukośnikiem oraz \classname{bot.command} dla komend z prefixem.
+
+\begin{lstlisting}[caption={Komenda "/schedule-event"},label={lst: schedule event call},language=Python]
+@bot.tree.command(name='schedule-event')
+async def add_event(interaction: discord.Interaction) -> None:
+  model = EventModel(creator_id=interaction.user.id,
+                     guild_id=interaction.guild.id)
+  view = ScheduleEventView(bot=bot, model=model)
+  await interaction.response.send_message(view=view, embed=view.embed)
+\end{lstlisting}
+
+Aplikacja posiada 5 \textit{"slash commands"}, odpowiedzialnych za tworzenie i zarządzanie wydarzeniami:
+\begin{itemize}
+    \item \textit{/add-event} - tworzy widok odpowiedzialny za wypełnienie informacji o wydarzeniu oraz jego stworzenie
+    \item \textit{/show-events} - pokazuje listę 5 najnowszych wydarzeń
+    \item \textit{/reschedule-event} - inicjuje proces wyboru daty i godziny wybranego wydarzenia
+    \item \textit{/cancel-event} - unieważnia wybrane wydarzenie
+    \item \textit{/select-dates} - wysyła prywatną wiadomość z widokiem odpowiadającym za wybór dogodnych terminów (Rys. \ref{img: slash_command})
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{img/slash_command.png}
+    \caption{Przykładowa komenda poprzedzona ukośnikiem}
+    \label{img: slash_command}
+\end{figure}
+
+Dodatkowo bot obsługuje również jedną zwykłą komendę z prefixem, która po napisaniu \textit{!set-channel}
+ustawia kanał, w którym jej użyto jako miejsce do komunikacji bota z użytkownikami w celu przekazania informacji takich jak wybranie terminu spotkania.
+
+\subsection{Interfejs Użytkownika}
+
+Podczas tworzenia interfejsu użytkownika aplikacji korzystano z modułu \textit{discord.ui} \cite{BotUIKit} oraz klasy \classname{discord.Embed}. Klasa \classname{View} odpowiadała za utworzenie wiadomości zawierającej różne komponenty UI takie jak przyciski i pola wyboru. Klasa \classname{Embed} reprezentowała obiekt discordowy w wiadomości, który pozwalał na zebranie informacji w elegancki sposób (Rys. \ref{fig: show events confirmed}).
+
+Szczegółową implementację można omówić na przykładzie komendy \textit{/schedule-event}, gdyż posiada ona najwięcej elementów UI wykorzystywanych w aplikacji. Wszystkie pliki dotyczące tworzenia interfejsu użytkownika znajdowały się w folderze \texttt{ui}.
+
+Komenda \textit{/schedule-event} tworzy obiekt klasy \classname{ScheduleEventView} (List. \ref{lst: schedule events}), a następnie reaguje na wiadomość użytkownika dostarczając widok oraz embed (List. \ref{lst: schedule event call}). Dodatkowo tworzony jest obiekt klasy \classname{Event Model} odpowiedzialny za składowanie informacji oraz komunikację z bazą danych.
+
+\begin{lstlisting}[language=Python,caption={Klasa ScheduleEventView},label={lst: schedule events}]
+class ScheduleEventView(ui.View):
+  def __init__(self, model: EventModel, bot: discord.Client = None):
+    super().__init__()
+    self.bot=bot
+    self.embed=ScheduleEventEmbed(model=model)
+    self.embed=self.embed.reload_embed()
+    self.add_participant_button=AddParticipantButton(self.embed)
+    self.add_item(self.add_participant_button)
+    self.remove_participant_button=RemoveParticipantButton(self.embed)
+    self.add_item(self.remove_participant_button)
+    self.add_description_button=AddDescriptionButton(self.embed)
+    self.add_item(self.add_description_button)
+    self.save_button=SaveButton(self.embed)
+    self.add_item(self.save_button)
+    self.add_item(CancelButton(self.embed))
+\end{lstlisting}
+
+Do stworzenia widoku należy utworzyć klasę pochodną do klasy \classname{discord.ui.View}. Sam widok nie potrzebuje przeładowania żadnych metod oprócz funkcji \classname{\_\_init\_\_}. W niej inicjalizujemy klasę nadrzędną a następnie tworzymy obiekty elementów widoku i rejestrujemy je przy użyciu metody \classname{add\_item}. Jeżeli elementy będą na siebie reagować, należy zapisać obiekty elementów do atrybutów a następnie zarejestrować je w widoku. W przypadku widoku \classname{ScheduleEventView} (List. \ref{lst: schedule events}) ważne jest dodanie obiektu \classname{ScheduleEventEmbed}, który będzie trzymał model danych w sobie. Z uwagi na to, że to embed zarządza danymi przy użyciu modelu oraz wyświetla je użytkownikowi, należy przekazać go do każdego elementu korzystającego z danych, jak na przykład obiekt przycisku do dodawania uczestników klasy \classname{AddParticipantButton}.
+
+Ze względu na to, iż widok ten po zaakceptowaniu wysyła prywatne wiadomości do uczestników musiał on mieć dostęp do funkcjonalności bota discordowego, a więc i obiektu \classname{bot}.
+
+Embed (List. \ref{lst: schedule event embed}) oprócz podstawowej funkcjonalności posiadał również metodę \classname{reload\_embed}, dzięki której możliwa była zmiana wyświetlanych informacji po interakcjach użytkownika. Z uwagi na to, że klasa \classname{Embed} nie posiada metod do aktualizacji informacji \cite{EmbedDocumentation} należy usunąć wszystkie informacje, a następnie dodać je ponownie. Tutaj właśnie wykorzystywane są zapisane w modelu \classname{EventModel} informacje. 
+
+\begin{lstlisting}[language=Python,caption={Klasa ScheduleEventEmbed},label={lst: schedule event embed}]
+class ScheduleEventEmbed(discord.Embed):
+  def __init__(self, model:EventModel, title:str="Schedule Event"):
+    super().__init__(title=title, color=discord.Color.pink())
+    self.model = model
+
+  def reload_embed(self):
+    self.clear_fields()
+    if self.model.picked_datetime:
+      self.add_field(
+        name="Date",
+        value=utils.datetime_to_str(self.model.picked_datetime), 
+        inline=False
+      )
+    self.add_field(
+      name="Event Name",
+      value=self.model.name, 
+      inline=False
+    )
+    if self.model.description:
+        self.add_field(
+          name="Description",
+          value=self.model.description, 
+          inline=False
+        )
+    if self.model.duration:
+        self.add_field(
+          name="Duration",
+          value=f"{self.model.duration} minutes", 
+          inline=False
+        )
+    self.add_field(
+        name="Participants", 
+        value=self.model.get_trunc_participants(), 
+        inline=False
+    )
+    return self
+
+\end{lstlisting}
+
+Elementy widoku takie jak przyciski, pola wyboru czy modal zdefiniowano jako obiekty osobnych klas, które dziedziczyły po podstawowych klasach modułu \textit{discord.ui}. Większość z nich zawierała asynchroniczną metodę \textit{callback} (List. \ref{lst: callback}). Dzięki niej możliwe było reagowanie na interakcje użytkownika z danym elementem. Z uwagi na ograniczenia czasu reakcji aplikacji spowodowane przez Discord API, kiedy wykonywano zapytania do bazy danych lub skomplikowane obliczenia odraczano dostarczenia odpowiedzi przy użyciu metody \textit{defer}. Następnie, przy użyciu atrybutu \textit{followup}, możliwe było dokończenie reakcji na interakcję użytkownika.
+
+\begin{lstlisting}[language=Python,caption={Asynchorniczna funkcja "callback" klasy "SaveButton"},label={lst: callback}]
+async def callback(self, interaction: Interaction):
+  await interaction.response.defer()
+  if event_id := self.embed.model.save_in_database():
+    for p in self.embed.model.participants:
+      self.view.bot.dispatch(
+        "start_schedule_event",
+        event_id,
+        p.id
+      )
+    await interaction.followup.edit_message(
+      interaction.message.id, 
+      content="Event created!", 
+      embed=None, 
+      view=None
+    )
+  else:
+    await interaction.followup.send_message(
+      interaction.message.id, 
+      content=utils.error_message("Ups, something went wrong!")
+    )
+\end{lstlisting}
+
+Oprócz podstawowych elementów widoku widok ten zawierał również modal pozwalający na zapisanie wszystkich niezbędnych informacji potrzebnych do stworzenia wydarzenia. Modal podobnie jak widok pozwalał na dodawanie elementów, jednak mógł on zawierać w sobie jedynie pola tekstowe, czyli obiekty klasy \classname{discord.ui.TextInput}. Tak jak w przykładzie poniżej (List. \ref{lst: modal text}) używano zarówno wartości domyślnych, jak i symboli zastępczych, aby użytkownik wiedział w jakim formacie zapisać informacje.
+
+\begin{lstlisting}[language=Python,caption={Dodawanie pola tekstowego do modalu},label={lst: modal text}]
+self.start_time = ui.TextInput(
+    label="FROM", 
+    placeholder="DD/MM/YYYY", 
+    default=default_start_date, 
+    required=True
+)
+self.add_item(self.start_time)
+\end{lstlisting}
+
+Modal posiadał 2 asynchroniczne funkcje, które można było nadpisać: \classname{on\_submit} (List. \ref{lst: modal submit}) oraz \classname{on\_error}. Z uwagi na to, że użytkownik mógł błędnie wpisać informacje (zwłaszcza przy wpisywaniu dat), sprawdzano poprawność danych przed ich zapisaniem. Użyto do tego funkcji \classname{validate}, która w razie znalezienia błędu w jakimś polu zwracała jego nazwę.
+
+\begin{lstlisting}[language=Python,caption={Metoda "on\_submit" klasy "AddDescriptionModal"},label={lst: modal submit}]
+async def on_submit(self, interaction: Interaction) -> None:
+    if field := self.validate():
+        await interaction.response.send_message(
+            utils.error_message(f"Invalid input: {field}"), 
+            ephemeral=True
+        )
+        return
+
+    self.view.add_description_button.label="Edit Info"
+    self.view.add_description_button.style=discord.ButtonStyle.secondary
+    self.embed.model.name=self.name.value
+    self.embed.model.description=self.description.value
+    self.embed.model.duration=self.duration.value
+    self.embed.model.set_start_date(self.start_time.value)
+    self.embed.model.set_end_date(self.end_time.value)
+
+    self.view.save_button.is_info_added = True
+    self.view.save_button.maybe_able()
+
+    await interaction.response.edit_message(
+        view=self.view, 
+        embed=self.embed.reload_embed()
+    )
+\end{lstlisting}
+
+Inne komendy opierały się na podobnych elementach i schemacie działania. 
+
+Wybór dogodnych terminów, czyli komenda \textit{/select-dates}, umożliwiała użytkownikowi interakcję z widokiem \classname{SelectDatesView} (Rys. \ref{fig: select dates}). 
+
+Pokazywał on przy użyciu embedu dzień, dla którego wybierano dostępność, pola wielokrotnego wyboru oraz przyciski do zmiany dnia.
+
+Przyciski z pojedynczą strzałką pozwalały na zmianę daty o jeden dzień, natomiast te z podwójnymi strzałkami o cały tydzień. Zmiana dnia powodowała przeładowanie się nie tylko embedu, ale i stworzenie nowych obiektów pól wielokrotnego wyboru klasy \classname{SelectHours}. 
+
+Dziedziczyła ona po klasie \classname{discord.ui.Select}, która wymagała, aby wszystkie możliwe opcje (w tym ich domyślne wartości) były zdefiniowane podczas konstrukcji obiektu. Maksymalna liczba opcji, jakie można dodać to 25, dlatego zdecydowano się na umożliwienie wyboru o równych godzinach (24 opcji). W przypadku godzin, które były już zajęte przez dowolnego uczestnika wydarzenia, były one oznaczane jako "Unavailable" i ignorowane w przypadku ich wyboru. 
+
+Kolejnym elementem interfejsu użytkownika był \classname{ShowEventsEmbed} ukazujący się po wykonaniu komendy \textit{/show-events}. Tutaj ze względu na to, iż miał on jedynie pokazywać informacje, a nie zbierać dane od użytkownika, użycie widoku było zbędne. Obiekt tej klasy przyjmował podczas swojego tworzenia typ (status) wydarzeń, które należało wyświetlić. Te, które zostały utworzone, natomiast ich data nie została jeszcze wybrana posiadały status \textit{"created"}, natomiast te z wybranym terminem \textit{"confirmed"} (Rys. \ref{fig: show events confirmed}). Odrzucone wydarzenia posiadały status \textit{"canceled"}. 
+
+Ostatnie dwie komendy poprzedzone ukośnikiem \textit{/reschedule-event} i \textit{/cancel-event} wyglądały bardzo podobnie i polegały na wybraniu wydarzenia przy użyciu pola wyboru.
+
+Informacje zwrotne oraz błędy przekazywane były jako formatowane wiadomości (czasami efemeryczne, to znaczy widoczne jedynie dla osoby, która dokonała interakcji z danym widokiem). Pierwsze kolorowane są na niebieski kolor, natomiast drugie na czerwono (Rys. \ref{img: event declined}).
+
+
+\subsection{Modelowanie danych}
+
+%%%  Ta sekcja NIE jest jeszce skończona i gotowa do sprawdzenia %%%%%
+
+Dane przetrzymywano w dokumentowej bazie danych MongoDB. Każde wydarzenie posiadało jeden dokument (List. \ref{lst: document}), w którym znajdowały się wszystkie informacje na jego temat. Zalety jakie się z tym wiązały znacznie przewyższały ograniczenia jakie mogły spowodować \cite{MongoBestPractice}.
+
+\begin{lstlisting}[caption={Przykładowy dokument w bazie danych},label={lst: document}]
+{
+  "creator_id": "393456997359550474",
+  "guild_id": "896504932604198983",
+  "name": "Klub Ksiazki 5",
+  "description": "",
+  "duration": "120",
+  "participants": [
+    "393456997359550474"
+  ],
+  "start_date": "2023-12-23T00:00:00.000Z",
+  "end_date": "2023-12-30T00:00:00.000Z",
+  "status": "confirmed",
+  "availability": [...],
+  "date": "2023-12-24T19:00:00.000Z"
+}
+\end{lstlisting}
+
+Dokument taki zawierał pola:
+\begin{itemize}
+    \item "creator\_id" - indeks użytkownika, który stworzył wydarzenie
+    \item "guild\_id"- indeks serwera discordowego, w którym wydarzenie zostało stworzone
+    \item "name" - nazwa wydarzenia
+    \item "description" - krótki opis wydarzenia
+    \item "duration" - czas wydarzenia zapisany w minutach
+    \item "participants" - lista indeksów użytkowników biorących udział w wydarzeniu
+    \item "start\_date" - początek ram czasowych, w których planowane jest wydarzenie
+    \item "end\_date" - koniec ram czasowych, w których planowane jest wydarzenie
+    \item "status" - status wydarzenie, może być "confirmed", "created" lub "canceled"
+    \item "availability" - jest to lista dokumentów przetrzymujących informacje na temat dostępności każdego z uczestników wydarzenia
+    \item "date" - ustalona data wydarzenia (w przypadku wydarzeń ze statusem "created" to pole jest puste)
+\end{itemize}
+
+Do komunikowania się z bazą danych wykorzystano modele znajdujące się w folderze "api". Były to \classname{EventModel} przetrzymujący wszystkie informacje o wydarzeniu oraz \classname{AvailabilityModel} służący do zarządzania jedynie dostępnością. Ten drugi był wykorzystywany przy komendzie \textit{/select-dates}. Obiekty tych klas były najczęściej zapisywane jako atrybuty obiektów klas dziedziczących po \classname{Embed}.
+
+Klasa \classname{EventModel} posiadała metody pozwalające przekształcać odpowiedzi użytkownika do odpowiednich typów danych, np podczas ustawiania pola "start\_date" (List. \ref{lst: event model start date}).
+
+\begin{lstlisting}[language=Python,caption={Funkcja "set\_start\_date" klasy "EventModel"},label={lst: event model start date}]
+def set_start_date(self, date: str) -> bool:
+    try:
+        self.start_date = utils.str_to_date(date)
+        return True
+    except Exception:
+        return False
+\end{lstlisting}
+
+Dodatkowo klasa ta posiadała metody statyczne zwracające obiekty tych klas uzupełnione informacjami z bazy danych (List. \ref{lst: event model gets}). Funkcja \classname{get\_from\_database} zwracała wydarzenie o konkretnym indeksie, natomiast \classname{get\_from\_database\_by\_creator} filtrowała wydarzenia po indeksie twórcy, statusie oraz pozwalała na ograniczenie ilości wyników poprzez zmienną \textit{limit}. 
+
+% TODO: Dopisać coś o tym jak pymongo działa i mognodb wyszukiwanie
+
+\begin{lstlisting}[language=Python,caption={Metody klasy "EventModel" służące do zwracania wydarzeń},label={lst: event model gets}]
+def get_from_database(event_id: str, bot: commands.Bot, status: str = None):
+    collection = get_database()["events"]
+    filter = {"_id": ObjectId(event_id), "status": status} if status else {
+        "_id": ObjectId(event_id)}
+    if event := collection.find_one(filter):
+        return model_from_database_data(event, bot)
+    return None
+
+def get_from_database_by_creator(creator_id: int, bot: commands.Bot, limit: int = 0, status: str = None):
+    collection = get_database()["events"]
+    if status:
+        query = {"creator_id": creator_id, "status": status}
+    else:
+        query = {"creator_id": creator_id}
+    if events := collection.find(query).sort("date", DESCENDING).limit(limit):
+        return [model_from_database_data(event, bot) for event in events]
+    return None
+\end{lstlisting}
+
+Model \classname{AvailabilityModel} pozwalał na przetrzymywanie szczegółowych informacji na temat dostępności danej osoby oraz zapisanie ich jako dokumentu, będącego elementem listy "availability" w dokumencie wydarzenia. 
+
+Klasa ta (List. \ref{lst: availability model}) zawierała atrybuty zawierające informacje dotyczące danego dnia oraz ram czasowych wydarzenia (\texttt{current\_date}, \texttt{start\_date}, \texttt{end\_date}), dane wydarzenia oraz użytkownika wypełniającego informacje (\texttt{event\_id}, \texttt{user\_id}) oraz listę słowników \texttt{availability} odpowiadającą za dostępności danej osoby w kolejnych dniach. Tylko ostatni atrybut był zapisywany w bazie danych, jednak dzięki strukturze modelu pozwalającej kontrolować aktualnie wybrany dzień, zapisywanie odpowiedzi użytkownika do odpowiedniej struktury było o wiele łatwiejsze.
+
+\begin{lstlisting}[language=Python,caption={Fragment klasy  "AvailabilityModel"},label={lst: availability model}]
+class AvailabilityModel:
+  times = [time(hour=hour) for hour in range(24)]
+  def __init__(self, event_id: int, user_id: int, start_date: datetime, end_date: datetime) -> None:
+    self.current_date = start_date
+    self.start_date = start_date
+    self.end_date = end_date
+    self.event_id = event_id
+    self.user_id = user_id
+    self.availability = {
+      utils.date_to_str(start_date + timedelta(days=i)): {"ok": [], "maybe": [], "no": []} for i in range((end_date - start_date).days + 1)
+    }
+    self.not_available_datetimes = self.get_user_not_available_datetimes()
+  def get_user_not_available_datetimes(self):
+    if user := get_database()["users"].find_one({"user_id": self.user_id}):
+      return [e["date"] for e in user["events"]]
+    return None
+\end{lstlisting}
+
+Dodatkowo klasa ta posiadała metody odpowiedzialne
+
+Oprócz dokumentów wydarzeń w bazie danych zapisywano również ustawienia dla każdego serwera (List. \ref{lst: mongo config}), a dokładnie indeks kanału na którym bot powinien się komunikować z użytkownikami.
+
+\begin{lstlisting}[caption={Dokument kolekcji "config"},label={lst: mongo config}]
+{
+  "guild_id": "900077363398852620",
+  "bot_channel_id": "1117531070011801762"
+}
+\end{lstlisting}
+
+\subsection{Algorytm wyboru}
+
+Funkcją odpowiedzialną za wybór odpowiedniego dnia oraz godziny jest \textit{pick\_date()} znajdująca się w pliku \texttt{algorithms.py}. Używa ona pomocniczych funkcji zawartych w tym samym pliku:
+\begin{itemize}
+    \item \classname{add\_duration\_to\_no\_times()} - uwzględniając czas trwania wydarzenia dodaje dodatkowe elementy do listy zawierającej czasy, w których uczestnicy nie są dostępni
+    \item \classname{select\_datetime()} - na podstawie listy dostępnych terminów oraz listy niedostępnych terminów wybiera najlepszy z nich
+    \item \classname{remove\_repetitions()} - usuwa z listy powtórzenia
+    \item \classname{parse\_availabilities()} - odpowiada za zamianę listy dostępności podzielonej na użytkowników otrzymanej z bazy danych na listy dostępności podzieloną ze względu na typ dostępności
+\end{itemize}
+
+Algorytm na początku parsuje dane przy użyciu \classname{parse\_availabilities()} zwracając trzy listy zawierające terminy, które najbardziej pasują ("ok\_datetimes"), w których są dostępni ("maybe\_datetimes") oraz takie, gdzie uczestnicy są niedostępni ("no\_datetimes"). 
+
+Później dodaje czas trwania wydarzenia zaokrąglony w górę do pełnych godzin do niedostępnych terminów. Polega to na dodaniu tylu dodatkowych godzin przed każdym niedostępnym terminem ile zaokrąglonych godzin uzyskano. Dzięki temu wybierając później godzinę rozpoczęcia wydarzenia mamy pewność, że będziemy mieli wystarczająco dużo czasu by nie nachodziło ono na zaznaczone przez użytkowników terminy, w których nie mają oni wolnego czasu.
+
+Następnie przy użyciu list sprawdzane są najpierw godziny, gdzie użytkownicy zaznaczyli, że chcą aby spotkanie się odbyło, a następnie uwzględniane są wszystkie terminy, w których mają czas.
+
+Wybór godziny i daty składa się z 5 etapów:
+
+\begin{enumerate}
+    \item stworzenie listy zawierającej terminy, w której nie ma powtórzeń
+    \item odfiltrowanie z nowo utworzonej listy tych terminów, które nie są dostępne (znajdują się w liście \textit{no\_datetimes})
+    \item przefiltrowanie pierwotnej listy terminów, tak aby zostały jedynie te, które znajdują się w liście wynikowej z punktu 2
+    \item sprawdzenie czy taka lista jest pusta (jeśli tak zwracamy "None", czyli brak wybranego terminu)
+    \item jeśli zawiera ona elementy to wybieramy ten, który najczęściej się powtarza (oznacza to, że najwięcej osób pragnęło mieć spotkanie w tym terminie)
+\end{enumerate}
+
+Jeśli zarówno przy wyborze dogodnych terminów oraz wszystkich możliwych nie uda się znaleźć pasującej godziny algorytm zwróci "None", a aplikacja przekaże użytkownikom informację (Rys. \ref{img: event declined}), że nie udało się znaleźć terminu, który odpowiadałby każdemu. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{img/event_declined.png}
+    \caption{Wiadomość informująca o braku terminu dla wydarzenia}
+    \label{img: event declined}
+\end{figure}
+
+W takim przypadku twórca wydarzenia może ponownie rozpocząć proces wybierania terminu, gdzie użytkownicy mogą zmienić swoje decyzje, a tym samym umożliwić aplikacji wybór.
+
+Algorytm nie sprawdza, czy termin, który wybierze nie jest zajęty przez inne spotkanie, gdyż jest to robione podczas wybierania przez uczestników ich dostępności (dana odpowiedź nie jest dla nich dostępna).
+
+\subsection{Testy}
+
+Z uwagi na dużą ilość graficznej funkcjonalności aplikacji w postaci rozbudowanego interfejsu użytkownika stworzonego przy użyciu gotowych komponentów udostępnianych przez Discord zdecydowano się na stworzenie testów jednostkowych dla algorytmu wyboru terminu, z uwagi na to iż jest to najważniejszy element aplikacji. Zastosowano najpopularniejszą bibliotekę do pisania testów w języku Python, czyli \textit{pytest}. Aby uruchomić testy można skorzystać ze skryptu \textit{test.sh} znajdującego się w folderze \textit{bot}. 
+
+Kod testujący został zaprojektowany w taki sposób, aby możliwe było jego łatwe rozszerzenie. Pozwali to na szybkie dodawanie nowych przypadków testowych wraz z możliwym rozwojem aplikacji.
+
+Oprócz głównej funkcji wybierającej termin testowane są również funkcje pomocnicze. Do symulacji danych wejściowych dla funkcji skorzystano z mechanizmu znanego jako "ustawienia pomocnicze" (ang. fixtures). Umożliwia on tworzenie i wykorzystywanie predefiniowanych obiektów wykorzystywanych w późniejszych testach.
+
+\section{Prezentacja}
+
+\subsection{Sposób użycia}
+
+\subsubsection{Dodawanie aplikacji do gildii}
+
+Korzystanie z gotowej aplikacji udostępnianej na serwerze Railway.app należy rozpocząć od dodania bota do swojej gildii na platformie \href{https://discord.com/}{https://discord.com/}. Wymagane do tego jest posiadanie konta oraz własnej gildii (należy być administratorem, gdyż będzie to potrzebne podczas ustawiania kanału odpowiedzialnego za komunikację z botem). 
+
+W celu dodania aplikacji należy skorzystać z \href{https://discordapp.com/oauth2/authorize?&client_id=1137322028643393587&scope=bot}{linku}. Link ten można zdobyć w zakładce OAuth na stronie \href{https://discord.com/developers/applications/}{https://discord.com/developers/applications/}.
+
+Po przejściu do linku autoryzacji dostępu ukaże się taka wiadomość (Rys. \ref{img: add bot}) gdzie możliwe jest wybranie serwera, do którego pragnie się zaprosić bota.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{img/add_bot.png}
+    \caption{Autoryzacja bota na własnym serwerze}
+    \label{img: add bot}
+\end{figure}
+
+Po dodaniu sugerowane jest utworzenie oddzielnego kanału tekstowego, a następnie użycie w nim komendy \textit{!set-channel}, która ustawi aktualny kanał tekstowy na miejsce do komunikacji aplikacji z użytkownikami. Kiedy aplikacja będzie potrzebowała nadać komunikat samoistnie, a nie tylko odpowiedzieć na wiadomość użytkownika, zostanie ona wysłana na tym kanale.
+
+Po wykonaniu powyższych instrukcji korzystanie z aplikacji jest możliwe dla każdego członka gildii. 
+
+\subsubsection{Ustalanie terminu spotkania}
+
+Aby odpowiednio dokonać procesu ustalania terminu przy użyciu stworzonej aplikacji należy postępować następująco.
+
+W pierwszej kolejności wywołujemy komendę \textit{/schedule-event}, na którą aplikacja zareaguje wysłaniem wiadomości z odpowiednim widokiem (Rys. \ref{fig: schedule event first}. Jeśli w trakcie rozmyślimy się, lub też było to przypadkowe użycie komendy, możemy skorzystać z przycisku \textit{Cancel}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/schedule_event_1.png}
+    \caption{Widok reakcji na komendę "/schedule-event"}
+    \label{fig: schedule event first}
+\end{figure}
+
+W przeciwnym wypadku należy dodać użytkowników przy użyciu \textit{Add Participant} (Rys. \ref{fig: schedule event add participant}). W przypadku pomyłki lub zmiany zdania możliwe jest usunięcie użytkownika za pomocą przycisku \textit{Remove Participant}. Dodatkowo po dodaniu pierwszego uczestnika kolor przycisku zmieni się na szary sygnalizując, iż ten etap został ukończony.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/schedule_event_2.png}
+    \caption{Widok pola wyboru "Add Participant"}
+    \label{fig: schedule event add participant}
+\end{figure}
+
+Po wybraniu uczestników należy dodać kluczowe informacje przy użyciu przycisku \textit{Add Info}, który otworzy modal (Rys. \ref{fig: schedule event add info}). Obowiązkowe do wypełnienia pola zaznaczone są czerwoną gwiazdką.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/info_modal.png}
+    \caption{Modal dodawania informacji "Add Info"}
+    \label{fig: schedule event add info}
+\end{figure}
+
+W przypadku podania błędnych danych, na przykład źle sformatowanej daty modal zostanie zamknięty, a aplikacja wyśle komunikat o błędzie. W takim przypadku należy ponownie wypełnić informację. Po porawnym ich wypełnieniu nazwa przycisku zostanie zmieniona na \textit{Edit Info}, a kolor na szary.
+
+Po wypełnieniu informacji oraz dodaniu uczestników (te dwa kroki można zrobić w dowolnej kolejności) odblokowany zostanie przycisk \textit{Save}, którym możemy zapisać informacje i rozpocząć proces wybierania terminu.
+
+Do każdego z uczestników wydarzenia zastanie wysłana prywatna wiadomość z informacją o tym, że muszą zaznaczyć swoją dyspozycyjność dla danego nowego wydarzenia (Rys. \ref{fig: select dates ping}). Należy skopiować ID wydarzenia a następnie w dowolnym kanale gildii (preferowany jest kanał do komunikacji z botem) użycie komendy \textit{/select-dates} dodając jako parametr zapisane ID.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/select_dates_ping.png}
+    \caption{Wiadomość przypominająca o wysłaniu dostępności}
+    \label{fig: select dates ping}
+\end{figure}
+
+Jeżeli ID jest poprawne zostanie do nas wysłana wiadomość z kolejnym widokiem pozwalającym na wybranie wolnych terminów w danym okresie (Rys. \ref{fig: select dates}). Dwuetapowy sposób wysyłania interfejsu pozwalającego na wybór dostępności jest spowodowany tym, że istnieje ograniczony czas, przez jaki aplikacja może reagować na zdarzenia takie jak kliknięcie przycisku, dlatego pozwalamy użytkownikowi uruchomić ten proces w momencie jak będzie miał na to czas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/select_dates.png}
+    \caption{Widok wyboru dostępności}
+    \label{fig: select dates}
+\end{figure}
+
+Poruszając się strzałkami pojedynczymi możemy zmieniać aktualnie wybrany dzień, natomiast podwójne strzałki przeniosą nas o cały tydzień. Pod przyciskami znajdują się 2 pola wielokrotnego wyboru:
+\begin{itemize}
+    \item \textit{Select OK Hours} - pozwala wybrać terminy, w których chcemy aby spotkanie się odbyło
+    \item \textit{Select MAYBE Hours} - daje możliwość wyboru terminów, w których jesteśmy dostępni (natomiast mogą nie być dla nas idealne)
+\end{itemize}
+
+Podział na te dwie kategorie daje możliwość uwzględnienia preferencji uczestników, jak również powiększa dostępne opcje, co zwiększa szanse na znalezienie terminu odpowiadającego każdemu. Godziny, które nie są zaznaczone w żadnym z tych pól zostaną uznane za te, w których uczestnik nie ma czasu.
+
+Po zaznaczeniu swojej dyspozycyjności klikamy przycisk \textit{Save}. Jeśli każdy z uczestników zaznaczy swoje odpowiedzi aplikacja wyśle wiadomość na głównym kanale pokazującą wydarzenie z wybranym terminem (Rys. \ref{fig: event confirmed}) lub informację, że nie udało się wyznaczyć godziny pasującej każdemu (Rys. \ref{img: event declined})
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/event_confirmed.png}
+    \caption{Wiadomość informująca o znalezionym terminie dla wydarzenia}
+    \label{fig: event confirmed}
+\end{figure}
+
+Jeśli dojdzie do drugiej sytuacji możliwe jest ponowne uruchomienie procesu wybierania godziny przy użyciu komendy \textit{/reschedule-event} z parametrem \textit{"Created"} (Rys. \ref{fig: reschedule event}). Z uwagi na brak wybranego dnia wydarzenie nie mogło zostać potwierdzone, czyli posiadać statusu "Confirmed".
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/reschedule_event_.png}
+    \caption{Użycie komendy "/reschedule-event", z parametrem "Created"}
+    \label{fig: reschedule event}
+\end{figure}
+
+Jeśli którykolwiek użytkownik pragnie zobaczyć wydarzenia, które organizuje, oraz na jakim są one etapie może skorzystać z komendy \textit{/show-events} (Rys. \ref{fig: show events confirmed}), która podobnie jak \textit{/reschedule-event} posiada parametr odpowiadający za wybór statusu wydarzenia ("Created", "Confirmed", "Canceled").
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/events_confirmed.png}
+    \caption{Embed komendy "/show-events" dla statusu "Confirmed"}
+    \label{fig: show events confirmed}
+\end{figure}
+
+Jeżeli z dowolnego powodu należy odwołać wydarzenie czy to stworzone, czy też potwierdzone można skorzystać z komendy \textit{/cancel-event}. Pozwoli ona wybrać wydarzenie a następnie jeśli było ono już potwierdzone wyśle do każdego uczestnika wiadomość, iż zostało ono usunięte.
+
+\subsection{Hosting}
+
+W przeciwieństwie do aplikacji internetowych, możliwość korzystania z bota w sieci była dostępna nawet uruchamiając go w lokalnym środowisku. Nie wymaga on udostępniania swojego adresu IP i portu w sieci, lecz przy użyciu tokenu tworzy stałe połączenie z serwerami Discord. 
+
+Dodatkowo należy pamiętać, że uruchomienie kilku aplikacji połączonych tym samym tokenem do tego samego bota powoduje, że będzie on reagował wielokrotnie na komendy. W celu uzyskania wielu aplikacji, z czego każda reagowałaby jedynie na swoje komendy nalałoby je osobno zarejestrować w portalu dewelopera.
+
+Używanie lokalnego środowiska w celu udostępniania swojej aplikacji innym użytkownikom nie jest najlepszym pomysłem, gdyż usługa powinna być dostępna cały czas. Z tego względu zdecydowano się na hosting oferowany przez platformę Railway \cite{Railway}. Pozwala ona na proste wdrażanie aplikacji internetowych lub jak w tym przypadku botów discordowych. Dzięki połączeniu z GitHubem, na którym znajduje się zdalne repozytorium projektu Railway jest w stanie przebudowywać aplikację za każdym razem, kiedy zauważy zmiany. 
+
+Aby skorzystać z serwisu należy połączyć swoje konto na platformie GitHub, a następnie wybrać projekt. Z uwagi na to, iż projekt zawiera plik Dockerfile Railway jest w stanie zbudować oraz uruchomić naszą aplikację bez żadnego problemu. Nie obsługuje on jednak plików "docker-compose.yml", dlatego postanowiono zbudować samą aplikację bez bazy danych. W takiej sytuacji należało również zmienić główny folder na \textit{/bot} (Rys. \ref{fig: railway settings}). 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/railway_settigns.png}
+    \caption{Ustawienia aplikacji w serwisie Railway}
+    \label{fig: railway settings}
+\end{figure}
+
+Bazę danych stworzono jako oddzielny serwis. Railway posiada gotowe szablony dla popularnych baz danych.
+
+Po utworzeniu serwisu dla MongoDB uzupełniono zmienne środowiskowe aplikacji w zakładce \textit{Variables} (Rys. \ref{fig: railway variables}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/railway_variables.png}
+    \caption{Panel zmiennych środowiskowych serwisu w aplikacji Railway}
+    \label{fig: railway variables}
+\end{figure}
+
+Odpowiadały one za:
+\begin{itemize}
+    \item DB\_NAME - nazwę bazy danych, mogła być to dowolna nazwa
+    \item MONGO\_URL - link do bazy danych zawierające login oraz hasło w celu uwierzytelnienia
+    \item RAILWAY\_DOCKERFILE\_PATH - wskazywał ścieżkę do pliku Dockerfile jeśli nie znajdował się on w głównym folderze
+    \item TOKEN - pozwalał na uwierzytelnienie aplikacji w serwisie Discrod (Rys. \ref{img: discord_gen_token})
+\end{itemize}
+
+W przypadku hostowania aplikacji na własnym serwerze należy uzupełnić plik ".env" a następnie wykonać komendę przedstawioną powyżej (List. \ref{lst: docker}). Plik Dockerfile dla aplikacji pythonowej został skonfigurowany dla systemu operacyjnego Linux i nie jest przystosowany do pracy na innych.
+
+Jeżeli wystąpiły problemy podczas uruchamiania kontenerów dockerowych mogło to być spowodowane brakiem demona odpowiedzialnego za konteneryzację. W takiej sytuacji należy użyć komendy poniższej komendy (List. \ref{lst: docker demon}).
+
+\begin{lstlisting}[label={lst: docker demon},caption={Uruchamianie demona dockerowego}]
+    $ sudo dockerd &
+\end{lstlisting}
+
+\section{Podsumowanie}
+
+Celem projektu było stworzenie aplikacji discordowej umożliwiającej wybór terminu spotkania dla grupy osób. Miała ona za zadanie zebrać informacje od wszystkich użytkowników na temat ich dostępności, a następnie wybrać najlepszy termin odpowiadający wszystkim osobom. 
+
+W celu stworzenia takiego bota 
+
+
+
+\section{Możliwości rozwoju aplikacji}
+Pomimo faktu, iż aplikacja jest w pełni działająca możliwe jest udoskonalenie jej oraz rozwinięcie poprzez dodanie nowych funkcjonalności. Pierwszą z nich mogłoby być dodanie możliwości przypominania o wydarzeniach. Bot wysyłałby do uczestników komunikat o tym, że niebawem (na przykład za 10 minut) planuje się odbyć jakieś wydarzenie.
+
+\newpage
+\printbibliography[title={Bibliografia}]
+
+\end{document}

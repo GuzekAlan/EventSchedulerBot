@@ -1,0 +1,73 @@
+Date : 2024-01-05 02:51:43
+Directory : /Users/alanguzek/Projects/EventSchedulerBot
+Total : 30 files,  1573 codes, 28 comments, 405 blanks, all 2006 lines
+
+Languages
++------------------+------------+------------+------------+------------+------------+
+| language         | files      | code       | comment    | blank      | total      |
++------------------+------------+------------+------------+------------+------------+
+| Python           |         19 |        867 |          7 |        210 |      1,084 |
+| LaTeX            |          1 |        530 |         21 |        160 |        711 |
+| Markdown         |          3 |        101 |          0 |         22 |        123 |
+| YAML             |          1 |         29 |          0 |          6 |         35 |
+| pip requirements |          1 |         20 |          0 |          1 |         21 |
+| BibTeX           |          1 |         17 |          0 |          2 |         19 |
+| Docker           |          2 |          7 |          0 |          4 |         11 |
+| Shell Script     |          2 |          2 |          0 |          0 |          2 |
++------------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                           | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                              |         30 |      1,573 |         28 |        405 |      2,006 |
+| . (Files)                                                                                      |          2 |         44 |          0 |         10 |         54 |
+| bot                                                                                            |         23 |        895 |          7 |        214 |      1,116 |
+| bot (Files)                                                                                    |          4 |         28 |          0 |          4 |         32 |
+| bot/event_scheduler                                                                            |         16 |        791 |          7 |        181 |        979 |
+| bot/event_scheduler (Files)                                                                    |          5 |        140 |          3 |         47 |        190 |
+| bot/event_scheduler/api                                                                        |          5 |        264 |          0 |         46 |        310 |
+| bot/event_scheduler/ui                                                                         |          6 |        387 |          4 |         88 |        479 |
+| bot/tests                                                                                      |          3 |         76 |          0 |         29 |        105 |
+| db                                                                                             |          1 |          1 |          0 |          1 |          2 |
+| docs                                                                                           |          4 |        633 |         21 |        180 |        834 |
+| docs (Files)                                                                                   |          2 |         86 |          0 |         18 |        104 |
+| docs/thesis                                                                                    |          2 |        547 |         21 |        162 |        730 |
++------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| filename                                                                                       | language         | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| /Users/alanguzek/Projects/EventSchedulerBot/README.md                                          | Markdown         |         15 |          0 |          4 |         19 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/Dockerfile                                     | Docker           |          6 |          0 |          3 |          9 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/__init__.py                    | Python           |          0 |          0 |          1 |          1 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/__main__.py                    | Python           |          4 |          0 |          2 |          6 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/api/__init__.py                | Python           |          0 |          0 |          1 |          1 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/api/algorithms.py              | Python           |         48 |          0 |         12 |         60 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/api/availability_model.py      | Python           |         62 |          0 |         10 |         72 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/api/event_model.py             | Python           |        144 |          0 |         18 |        162 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/api/settings.py                | Python           |         10 |          0 |          5 |         15 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/bot.py                         | Python           |        100 |          2 |         24 |        126 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/db.py                          | Python           |         13 |          1 |          5 |         19 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/ui/__init__.py                 | Python           |          0 |          0 |          1 |          1 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/ui/cancel_event_message.py     | Python           |         37 |          0 |         10 |         47 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/ui/reschedule_event_message.py | Python           |         41 |          0 |         10 |         51 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/ui/schedule_event_message.py   | Python           |        166 |          2 |         40 |        208 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/ui/select_dates_message.py     | Python           |         95 |          2 |         19 |        116 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/ui/show_events_message.py      | Python           |         48 |          0 |          8 |         56 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/event_scheduler/utils.py                       | Python           |         23 |          0 |         15 |         38 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/requirements.txt                               | pip requirements |         20 |          0 |          1 |         21 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/start.sh                                       | Shell Script     |          1 |          0 |          0 |          1 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/test.sh                                        | Shell Script     |          1 |          0 |          0 |          1 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/tests/__init__.py                              | Python           |          0 |          0 |          1 |          1 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/tests/algorithms_test.py                       | Python           |         57 |          0 |         18 |         75 |
+| /Users/alanguzek/Projects/EventSchedulerBot/bot/tests/utils_test.py                            | Python           |         19 |          0 |         10 |         29 |
+| /Users/alanguzek/Projects/EventSchedulerBot/db/Dockerfile                                      | Docker           |          1 |          0 |          1 |          2 |
+| /Users/alanguzek/Projects/EventSchedulerBot/docker-compose.yml                                 | YAML             |         29 |          0 |          6 |         35 |
+| /Users/alanguzek/Projects/EventSchedulerBot/docs/idea.md                                       | Markdown         |         59 |          0 |         14 |         73 |
+| /Users/alanguzek/Projects/EventSchedulerBot/docs/thesis/main.tex                               | LaTeX            |        530 |         21 |        160 |        711 |
+| /Users/alanguzek/Projects/EventSchedulerBot/docs/thesis/refs.bib                               | BibTeX           |         17 |          0 |          2 |         19 |
+| /Users/alanguzek/Projects/EventSchedulerBot/docs/todo.md                                       | Markdown         |         27 |          0 |          4 |         31 |
+| Total                                                                                          |                  |      1,573 |         28 |        405 |      2,006 |
++------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+

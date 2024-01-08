@@ -4,40 +4,36 @@ from event_scheduler.api.event_model import EventModel
 from event_scheduler import utils
 
 
-class RescheduleEventView(discord.ui.View):
-    """View for rescheduling an event"""
+class CancelEventView(discord.ui.View):
+    """View for cancelling an event"""
 
-    def __init__(self, user_id: int, status: str, bot: discord.Client = None):
+    def __init__(self, user_id: int, bot: discord.Client = None):
         super().__init__()
         self.bot = bot
         self.events = EventModel.get_from_database_by_creator(
-            creator_id=user_id, bot=self.bot, status=status)
-        if self.events:
-            self.add_item(EventSelect(self.events))
-        else:
-            self.add_item(discord.ui.Button(label="No event to reschedule", disabled=True, style=discord.ButtonStyle.red))
+            creator_id=user_id, bot=self.bot)
+        self.add_item(EventSelect(self.events))
 
 
 class EventSelect(discord.ui.Select):
     def __init__(self, events):
-        super().__init__(placeholder="Select an event to reschedule",
+        super().__init__(placeholder="Select an event to cancel",
                          options=[
                              discord.SelectOption(label=event_label(event), value=i) for i, event in enumerate(events)
                          ], min_values=0, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
         event = self.view.events[int(self.values[0])]
-        event.status = "created"
-        event.picked_datetime = None
-        event.availability = []
+        message_content = utils.error_message(f"Event {event.name} has been canceled")
+        if event.status == "confirmed":
+            for p in event.get_participants_ids():
+                if user := self.view.bot.get_user(p):
+                    print(user)
+                    await user.send(message_content)
+        event.status = "canceled"
         event.save_in_database()
-        for p in event.participants:
-            self.view.bot.dispatch(
-                "start_schedule_event",
-                event.event_id,
-                p.id
-            )
-        await interaction.response.edit_message(content=utils.information_message(f"Reschedule event {event.name}"), view=None, embed=None)
+        await interaction.followup.edit_message(interaction.message.id, content=message_content, view=None, embed=None)
 
 
 def event_label(event: EventModel) -> str:

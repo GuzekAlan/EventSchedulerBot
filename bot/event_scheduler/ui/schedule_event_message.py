@@ -46,6 +46,7 @@ class ScheduleEventView(ui.View):
         self.add_item(self.add_description_button)
         self.save_button = SaveButton(self.embed)
         self.add_item(self.save_button)
+        self.add_item(CancelButton(self.embed))
 
 # Buttons
 
@@ -80,6 +81,14 @@ class AddDescriptionButton(ui.Button):
 
     async def callback(self, interaction: Interaction):
         await interaction.response.send_modal(AddDescriptionModal(self.view, self.embed))
+
+
+class CancelButton(ui.Button):
+    def __init__(self, embed: discord.Embed):
+        super().__init__(label="Cancel", style=discord.ButtonStyle.danger)
+
+    async def callback(self, interaction: Interaction):
+        await interaction.response.edit_message(content=utils.error_message("Scheduling an event has been canceled"), view=None, embed=None)
 
 
 class SaveButton(ui.Button):
@@ -142,7 +151,7 @@ class AddDescriptionModal(ui.Modal):
         super().__init__(title="Add Info", timeout=120.0)
         default_name = embed.model.name if embed.model.name else "Dungeons and Dragons"
         default_duration = embed.model.duration if embed.model.duration else "120"
-        default_descripiton = embed.model.description
+        default_description = embed.model.description
         default_start_date = utils.date_to_str(
             embed.model.start_date if embed.model.start_date else datetime.now())
         default_end_date = utils.date_to_str(
@@ -153,7 +162,7 @@ class AddDescriptionModal(ui.Modal):
                                  default=default_name, required=True)
         self.add_item(self.name)
         self.description = ui.TextInput(label="Description",
-                                        default=default_descripiton, required=False)
+                                        default=default_description, required=False)
         self.add_item(self.description)
         self.duration = ui.TextInput(label="Duration(min)",
                                      default=default_duration, required=True)
