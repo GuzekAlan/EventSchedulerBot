@@ -46,7 +46,6 @@ class AvailabilityModel:
         return chosen_hour in selected_hours
 
     def is_time_available(self, time: time) -> bool:
-        # TODO: Make it work in Select Hours in View
         return datetime.combine(self.current_date.date(), time) not in self.not_available_datetimes
 
     def save_in_database(self):
