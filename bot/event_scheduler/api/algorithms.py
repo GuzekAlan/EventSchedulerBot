@@ -32,10 +32,7 @@ def select_datetime(datetimes: list, no_datetimes: list) -> datetime:
         dt for dt in distinct_datetimes if dt not in no_datetimes]
     if legit_datetimes := [i for i in datetimes if i in filtered_datetimes]:
         if len(legit_datetimes) > 0:
-            try:
-                return Counter(legit_datetimes).most_common(1)[0][0]
-            except Exception:
-                return legit_datetimes[0]
+            return Counter(legit_datetimes).most_common(1)[0][0]
         else:
             return None
     else:
