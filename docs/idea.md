@@ -52,22 +52,8 @@ Message with embed showing time selected and two buttons:
 1. `Accept` - creates discord event and saves it in database
 2. `Decline` - deletes event from database
 
-# FAQ
-
-### Can you change time or date of event?
-Yes you can but then the whole process of selecting date starts again.
-
-### Can you add user to already created event?
-Yes, users can be added later but they cannot choose best date for them and must accept already selected date
-
-
 # Other
 
 ## Interactions with planned Event
-1. Creator:
-    * cancel event
-    * edit information
-    * request date change (process of choosing date)
-    * add user
-2. Participant:
-    * set reminder for event
+* cancel event
+* request date change (process of choosing date)
